@@ -1,0 +1,14 @@
+{
+  "extensionName": {
+    "message": "Exnota - Highlights to Notion",
+    "description": "Name of the extension."
+  },
+  "extensionNameShort": {
+    "message": "Exnota",
+    "description": "Short name of the extension."
+  },
+  "extensionDescription": {
+    "message": "Save web highlights to Notion in one click.",
+    "description": "Description of the extension."
+  }
+}

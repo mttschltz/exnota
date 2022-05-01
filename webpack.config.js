@@ -169,7 +169,10 @@ module.exports = {
     new MiniCssExtractPlugin({filename: 'css/[name].css'}),
     // copy static assets
     new CopyWebpackPlugin({
-      patterns: [{from: 'source/assets', to: 'assets'}],
+      patterns: [
+        {from: 'source/assets', to: 'assets'},
+        {from: 'source/_locales', to: '_locales'},
+      ],
     }),
     // plugin to enable browser reloading in development mode
     extensionReloaderPlugin,
@@ -199,7 +202,10 @@ module.exports = {
               {
                 format: 'zip',
                 source: path.join(destPath, targetBrowser),
-                destination: `${path.join(destPath, targetBrowser)}.${getExtensionFileType(targetBrowser)}`,
+                destination: `${path.join(
+                  destPath,
+                  targetBrowser
+                )}.${getExtensionFileType(targetBrowser)}`,
                 options: {zlib: {level: 6}},
               },
             ],

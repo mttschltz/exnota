@@ -1,7 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Exnota",
+  "name": "__MSG_extensionName__",
   "version": "0.0.1",
+  "default_locale": "en",
 
   "icons": {
     "16": "assets/icons/favicon-16x16.png",
@@ -11,9 +12,9 @@
     "192": "assets/icons/favicon-192x192.png",
     "500": "assets/icons/favicon-500x500.png"
   },
-  "description": "Save web highlights to Notion.",
+  "description": "__MSG_extensionDescription__",
   "homepage_url": "https://github.com/mttschltz/exnota",
-  "short_name": "Exnota",
+  "short_name": "__MSG_extensionNameShort__",
 
   "permissions": ["activeTab", "storage", "http://*/*", "https://*/*"],
 
@@ -22,12 +23,6 @@
   "__chrome|firefox__author": "<TODO>",
   "__opera__developer": {
     "name": "<TODO>"
-  },
-
-  "__firefox__applications": {
-    "gecko": {
-      "id": "{<TODO>}"
-    }
   },
 
   "__chrome__minimum_chrome_version": "49",
