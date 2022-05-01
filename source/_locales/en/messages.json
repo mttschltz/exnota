@@ -10,5 +10,9 @@
   "extensionDescription": {
     "message": "Save web highlights to Notion in one click.",
     "description": "Description of the extension."
+  },
+  "installationLog": {
+    "message": "Exnota installed! 🖍",
+    "description": "Description of the extension."
   }
 }
