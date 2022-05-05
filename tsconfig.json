@@ -13,6 +13,8 @@
 		/* Additional Checks */
 		"useDefineForClassFields": true,
 		"skipLibCheck": true,
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
 	},
 	"include": [
 		"source",
