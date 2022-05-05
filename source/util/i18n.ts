@@ -1,10 +1,17 @@
 import i18n from 'i18next';
-import {initReactI18next, TFunction, useTranslation} from 'react-i18next';
-import appTranslations from '../_locales/en/app.json';
+import {
+  initReactI18next,
+  TFunction,
+  Trans,
+  useTranslation,
+} from 'react-i18next';
+import common from '../_locales/en/common.json';
+import setup from '../_locales/en/setup.json';
 
 const resources = {
   en: {
-    app: appTranslations,
+    common,
+    setup,
   },
 } as const;
 
@@ -23,11 +30,13 @@ i18n
     },
   });
 
-type Namespace = keyof typeof resources['en'];
+type Namespace = Exclude<keyof typeof resources['en'], 'common'>;
 
-const useTranslate = <T extends Namespace>(x: T): TFunction<T[]> => {
-  const [t] = useTranslation([x]);
+const useTranslate = <T extends Namespace>(
+  x: T
+): TFunction<(T | 'common')[]> => {
+  const [t] = useTranslation([x, 'common']);
   return t;
 };
 
-export {useTranslate, resources};
+export {useTranslate, resources, Trans as Translate};

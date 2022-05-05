@@ -17,6 +17,7 @@ import {
 import {browser} from 'webextension-polyfill-ts';
 import {useCallback, useState} from 'react';
 import {BackgroundType} from 'grommet/utils';
+import {Translate, useTranslate} from '../util/i18n';
 
 type StepLabelState = 'complete' | 'active' | 'upcoming';
 
@@ -49,52 +50,65 @@ const StepLabel: React.FC<{
         justify="center"
         align="center"
       >
-        {browser.i18n.getMessage(num)}
+        {num}
       </Box>
-      {browser.i18n.getMessage(label)}
+      {label}
     </Box>
   );
 };
 
-
-const InstructionsHeading: React.FC = ({ children }) => {
-  return <Heading level={3} size="5" margin={{bottom: 'small'}}>{children}</Heading>
-}
+const InstructionsHeading: React.FC = ({children}) => {
+  return (
+    <Heading level={3} size="5" margin={{bottom: 'small'}}>
+      {children}
+    </Heading>
+  );
+};
 
 const InstructionsDescription: React.FC = ({children}) => {
-  return <Paragraph margin={{top: 'none', bottom: 'medium'}} fill={true}>{children}</Paragraph>
-}
+  return (
+    <Paragraph margin={{top: 'none', bottom: 'medium'}} fill={true}>
+      {children}
+    </Paragraph>
+  );
+};
 
 const InstructionsColumns: React.FC = ({children}) => {
-  return <Box direction='row' gap="medium" margin={{bottom: "medium"}}>{children}</Box>
-}
+  return (
+    <Box direction="row" gap="medium" margin={{bottom: 'medium'}}>
+      {children}
+    </Box>
+  );
+};
 
 const InstructionsColumnText: React.FC = ({children}) => {
-  return <Box basis='50%' flex={{shrink: 0}}>
-    {children}
-  </Box>
-}
-const InstructionsColumnImage: React.FC = ({children}) => {
-  return <Box border="all" alignSelf="start">
-  {children}
-</Box>
-}
-
-const InstructionsStep: React.FC<{index: number}> = ({children, index}) => {
   return (
-    <Paragraph margin={{top: "none", bottom: 'medium'}}>{browser.i18n.getMessage(`setupInstruction${index}`)}{children}</Paragraph>
-  )
-}
-              
-                
-                
+    <Box basis="50%" flex={{shrink: 0}}>
+      {children}
+    </Box>
+  );
+};
+const InstructionsColumnImage: React.FC = ({children}) => {
+  return (
+    <Box border="all" alignSelf="start">
+      {children}
+    </Box>
+  );
+};
+
+const InstructionsStep: React.FC = ({children}) => {
+  return (
+    <Paragraph margin={{top: 'none', bottom: 'medium'}}>{children}</Paragraph>
+  );
+};
 
 type Step = 'connect' | 'select' | 'start';
 
 const Options: React.FC = () => {
   const [step] = useState<Step>('connect');
-  const stateConfig = useState<string | undefined>(undefined)
-  const setIntegrationToken = stateConfig[1]
+  const stateConfig = useState<string | undefined>(undefined);
+  const setIntegrationToken = stateConfig[1];
+  const t = useTranslate('setup');
 
   const stepLabelState = useCallback(
     (label: Step): StepLabelState => {
@@ -136,7 +150,7 @@ const Options: React.FC = () => {
           <Header>
             <Box>
               <Heading level="1" size="2">
-                {browser.i18n.getMessage('setup.title')}
+                {t('setup:title')}
               </Heading>
             </Box>
             <Box align="center" direction="row" gap="xsmall">
@@ -158,117 +172,144 @@ const Options: React.FC = () => {
           >
             <StepLabel
               state={stepLabelState('connect')}
-              num="setup.connectStepNumber"
-              label="setup.connectStepLabel"
+              num={t('setup:connect.stepNumber')}
+              label={t('setup:connect.stepLabel')}
             />
             <StepLabel
               state={stepLabelState('select')}
-              num="setup.selectStepNumber"
-              label="setup.selectStepLabel"
+              num={t('setup:select.stepNumber')}
+              label={t('setup:select.stepLabel')}
             />
             <StepLabel
               state={stepLabelState('start')}
-              num="setup.startStepNumber"
-              label="setup.startStepTitle"
+              num={t('setup:select.stepNumber')}
+              label={t('setup:start.stepLabel')}
             />
           </Box>
           {step === 'connect' && (
             <Box>
-              <Heading level={2} size="2" margin={{bottom: "xxsmall"}}>
-                {browser.i18n.getMessage('setup.connectTitle')}
+              <Heading level={2} size="2" margin={{bottom: 'xxsmall'}}>
+                {t('setup:connect.title')}
               </Heading>
-              <Paragraph fill={true} margin={{top: 'none'}}>{browser.i18n.getMessage('setup.connectDescription')}</Paragraph>
-              <Box round="small" pad="small" border="all" margin={{bottom: "large"}}>{browser.i18n.getMessage('setup.connectAdminReminder')}</Box>
-              <InstructionsHeading>{browser.i18n.getMessage('setup.connectAdminReminder')}</InstructionsHeading>
+              <Paragraph fill={true} margin={{top: 'none'}}>
+                {t('setup:connect.description')}
+              </Paragraph>
+              <Box
+                round="small"
+                pad="small"
+                border="all"
+                margin={{bottom: 'large'}}
+              >
+                {t('setup:connect.adminReminder')}
+              </Box>
+              <InstructionsHeading>
+                {t('setup:connect.createIntegrationTitle')}
+              </InstructionsHeading>
               <InstructionsColumns>
                 <InstructionsColumnText>
-                  <InstructionsStep index={1}>Log in to the workspace where your highlights should be saved.</InstructionsStep>
-                  <InstructionsStep index={2}>Go to <Anchor href='https://www.notion.com/my-integrations'>https://www.notion.com/my-integrations</Anchor>.</InstructionsStep>
-                  <InstructionsStep index={3}>Click the "+ New integration" button.</InstructionsStep>
+                  <InstructionsStep>
+                    {t('setup:connect.instruction1')}
+                  </InstructionsStep>
+                  <InstructionsStep>
+                    <Translate i18nKey="connect.instruction2">
+                      Go to{' '}
+                      <Anchor href="https://www.notion.com/my-integrations">
+                        https://www.notion.com/my-integrations
+                      </Anchor>
+                      .
+                    </Translate>
+                  </InstructionsStep>
+                  <InstructionsStep>
+                    {t('setup:connect.instruction3')}
+                  </InstructionsStep>
                 </InstructionsColumnText>
                 <InstructionsColumnImage>
-                  <Image
-                  src="../assets/setup/connect-3-new-integration-wide.png"
-                  />
+                  <Image src="../assets/setup/connect-3-new-integration-wide.png" />
                 </InstructionsColumnImage>
               </InstructionsColumns>
 
-              <InstructionsHeading>Name and select workspace</InstructionsHeading>
+              <InstructionsHeading>
+                {t('setup:connect.createNameSelectTitle')}
+              </InstructionsHeading>
               <InstructionsColumns>
                 <InstructionsColumnText>
-                  <InstructionsStep index={4}>
-                    Name this integration, e.g. "Exnota Highlights".
+                  <InstructionsStep>
+                    {t('setup:connect.instruction4')}
                   </InstructionsStep>
-                  <InstructionsStep index={5}>
-                    Select the workspace where you want highlights to be saved.
+                  <InstructionsStep>
+                    {t('setup:connect.instruction5')}
                   </InstructionsStep>
                 </InstructionsColumnText>
                 <InstructionsColumnImage>
-                  <Image
-                  src="../assets/setup/connect-4-5-name-and-workspace.png"
-                />
+                  <Image src="../assets/setup/connect-4-5-name-and-workspace.png" />
                 </InstructionsColumnImage>
               </InstructionsColumns>
 
-              <InstructionsHeading>Configure capabilities</InstructionsHeading>
-              <InstructionsDescription>Capabilities determine what actions Exnota can perform in your workspace. Content Capabilities will only apply to pages you explicitly give Exnota access to in the next step.</InstructionsDescription>
+              <InstructionsHeading>
+                {t('setup:connect.configureCapabilitiesTitle')}
+              </InstructionsHeading>
+              <InstructionsDescription>
+                {t('setup:connect.configureCapabilitiesDescription')}
+              </InstructionsDescription>
               <InstructionsColumns>
                 <InstructionsColumnText>
-                  <InstructionsStep index={6}>
-                    Under "Capabilities > Content Capabilities", check all "Content Capabilities" boxes, so your highlights can be saved.
+                  <InstructionsStep>
+                    {t('setup:connect.instruction6')}
                   </InstructionsStep>
-                  <InstructionsStep index={7}>
-                  Under "Capabilities > User Capabilities", select "No user information".
+                  <InstructionsStep>
+                    {t('setup:connect.instruction7')}
                   </InstructionsStep>
                 </InstructionsColumnText>
                 <InstructionsColumnImage>
-                  <Image
-                  src="../assets/setup/connect-6-7-capabilities.png"
-                />
+                  <Image src="../assets/setup/connect-6-7-capabilities.png" />
                 </InstructionsColumnImage>
               </InstructionsColumns>
 
-              <InstructionsHeading>Get the token</InstructionsHeading>
+              <InstructionsHeading>
+                {t('setup:connect.getTokenTitle')}
+              </InstructionsHeading>
               <InstructionsColumns>
                 <InstructionsColumnText>
-                  <InstructionsStep index={8}>Click "Submit".</InstructionsStep>
+                  <InstructionsStep>
+                    {t('setup:connect.instruction8')}
+                  </InstructionsStep>
                 </InstructionsColumnText>
                 <InstructionsColumnImage>
-                  <Image
-                  src="../assets/setup/connect-8-submit-wide.png"
-                />
+                  <Image src="../assets/setup/connect-8-submit-wide.png" />
                 </InstructionsColumnImage>
               </InstructionsColumns>
               <InstructionsColumns>
                 <InstructionsColumnText>
-                  <InstructionsStep index={9}>
-                    Copy the "Internal Integration Token" on the next page and paste it below.
+                  <InstructionsStep>
+                    {t('setup:connect.instruction9')}
                   </InstructionsStep>
                 </InstructionsColumnText>
                 <InstructionsColumnImage>
-                  <Image
-                  src="../assets/setup/connect-9-copy-token-blur.png"
-                />
+                  <Image src="../assets/setup/connect-9-copy-token-blur.png" />
                 </InstructionsColumnImage>
               </InstructionsColumns>
             </Box>
           )}
-            <Form<{ integrationToken?: string }>
-              value={{integrationToken: undefined}}
-              onChange={({ integrationToken }) => setIntegrationToken(integrationToken)}
-              // onSubmit={({ value }) => setIntegrationToken(value.integrationToken)}
-            >
-              <Box width="medium">
-                {/* TODO: Update label */}
-                <FormField name="integrationToken" htmlFor="integrationToken" label="Internal Integration Token">
-                  <TextInput id="integrationToken" name="integrationToken" />
-                </FormField>
-              </Box>
-              <Box direction="row" gap="medium" justify='end'>
-                {/* TODO: Update label */}
-                <Button type="submit" primary label="Next" />
-              </Box>
-            </Form>
+          <Form<{integrationToken?: string}>
+            value={{integrationToken: undefined}}
+            onChange={({integrationToken}): void =>
+              setIntegrationToken(integrationToken)
+            }
+            // onSubmit={({ value }) => setIntegrationToken(value.integrationToken)}
+          >
+            <Box width="medium">
+              <FormField
+                name="integrationToken"
+                htmlFor="integrationToken"
+                label={t('setup:connect.integrationTokenLabel')}
+              >
+                <TextInput id="integrationToken" name="integrationToken" />
+              </FormField>
+            </Box>
+            <Box direction="row" gap="medium" justify="end">
+              <Button type="submit" primary label={t('setup:connect.next')} />
+            </Box>
+          </Form>
         </PageContent>
       </Page>
     </Grommet>
