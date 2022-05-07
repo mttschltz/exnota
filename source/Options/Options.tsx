@@ -120,7 +120,11 @@ const useOptions = (): {
     notionIntegrationToken: '',
   });
   const setNotionIntegrationToken = useCallback((token: string) => {
-    setOpts((state) => ({...state, notionIntegrationToken: token ?? ''}));
+    setOpts((state) => {
+      const newOpts = {...state, notionIntegrationToken: token ?? ''};
+      optionsConfig.set(newOpts);
+      return newOpts;
+    });
   }, []);
   const [loaded, setLoaded] = useState(false);
 
