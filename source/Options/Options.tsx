@@ -20,6 +20,7 @@ import {
 import {browser} from 'webextension-polyfill-ts';
 import {useCallback, useState} from 'react';
 import {BackgroundType} from 'grommet/utils';
+import {hpe} from 'grommet-theme-hpe';
 import {Translate, useTranslate} from '../util/i18n';
 
 type StepLabelState = 'complete' | 'active' | 'upcoming';
@@ -148,9 +149,10 @@ const Options: React.FC = () => {
     },
     [step]
   );
+
   return (
-    <Grommet plain>
-      <Page kind="narrow">
+    <Grommet theme={hpe}>
+      <Page kind="narrow" pad={{bottom: 'xlarge'}}>
         <PageContent>
           <Header>
             <Box>
@@ -193,7 +195,7 @@ const Options: React.FC = () => {
               <StepLabel
                 id="setup-step3"
                 label={t('setup:start.stepLabel')}
-                num={t('setup:select.stepNumber')}
+                num={t('setup:start.stepNumber')}
                 state={stepLabelState('start')}
                 pad={{left: 'medium'}}
               />
@@ -219,128 +221,124 @@ const Options: React.FC = () => {
           </Stack>
           {step === 'connect' && (
             <Box>
-              <Heading level={2} size="2" margin={{bottom: 'xxsmall'}}>
-                {t('setup:connect.title')}
-              </Heading>
-              <Paragraph fill={true} margin={{top: 'none'}}>
-                {t('setup:connect.description')}
-              </Paragraph>
-              <Box
-                round="small"
-                pad="small"
-                border="all"
-                margin={{bottom: 'large'}}
-              >
-                {t('setup:connect.adminReminder')}
+              <Box>
+                <Heading level={2} size="2" margin={{bottom: 'xxsmall'}}>
+                  {t('setup:connect.title')}
+                </Heading>
+                <Paragraph fill={true} margin={{top: 'none'}}>
+                  {t('setup:connect.description')}
+                </Paragraph>
+                <Box
+                  round="small"
+                  pad="small"
+                  border="all"
+                  margin={{bottom: 'large'}}
+                >
+                  {t('setup:connect.adminReminder')}
+                </Box>
+                <InstructionsHeading>
+                  {t('setup:connect.createIntegrationTitle')}
+                </InstructionsHeading>
+                <InstructionsColumns>
+                  <InstructionsColumnText>
+                    <InstructionsStep>
+                      {t('setup:connect.instruction1')}
+                    </InstructionsStep>
+                    <InstructionsStep>
+                      <Translate i18nKey="connect.instruction2">
+                        Go to{' '}
+                        <Anchor href="https://www.notion.com/my-integrations">
+                          https://www.notion.com/my-integrations
+                        </Anchor>
+                        .
+                      </Translate>
+                    </InstructionsStep>
+                    <InstructionsStep>
+                      {t('setup:connect.instruction3')}
+                    </InstructionsStep>
+                  </InstructionsColumnText>
+                  <InstructionsColumnImage>
+                    <Image src="../assets/setup/connect-3-new-integration-wide.png" />
+                  </InstructionsColumnImage>
+                </InstructionsColumns>
+
+                <InstructionsHeading>
+                  {t('setup:connect.createNameSelectTitle')}
+                </InstructionsHeading>
+                <InstructionsColumns>
+                  <InstructionsColumnText>
+                    <InstructionsStep>
+                      {t('setup:connect.instruction4')}
+                    </InstructionsStep>
+                    <InstructionsStep>
+                      {t('setup:connect.instruction5')}
+                    </InstructionsStep>
+                  </InstructionsColumnText>
+                  <InstructionsColumnImage>
+                    <Image src="../assets/setup/connect-4-5-name-and-workspace.png" />
+                  </InstructionsColumnImage>
+                </InstructionsColumns>
+
+                <InstructionsHeading>
+                  {t('setup:connect.configureCapabilitiesTitle')}
+                </InstructionsHeading>
+                <InstructionsDescription>
+                  {t('setup:connect.configureCapabilitiesDescription')}
+                </InstructionsDescription>
+                <InstructionsColumns>
+                  <InstructionsColumnText>
+                    <InstructionsStep>
+                      {t('setup:connect.instruction6')}
+                    </InstructionsStep>
+                    <InstructionsStep>
+                      {t('setup:connect.instruction7')}
+                    </InstructionsStep>
+                  </InstructionsColumnText>
+                  <InstructionsColumnImage>
+                    <Image src="../assets/setup/connect-6-7-capabilities.png" />
+                  </InstructionsColumnImage>
+                </InstructionsColumns>
+
+                <InstructionsHeading>
+                  {t('setup:connect.getTokenTitle')}
+                </InstructionsHeading>
+                <InstructionsColumns>
+                  <InstructionsColumnText>
+                    <InstructionsStep>
+                      {t('setup:connect.instruction8')}
+                    </InstructionsStep>
+                  </InstructionsColumnText>
+                  <InstructionsColumnImage>
+                    <Image src="../assets/setup/connect-8-submit-wide.png" />
+                  </InstructionsColumnImage>
+                </InstructionsColumns>
+                <InstructionsColumns>
+                  <InstructionsColumnText>
+                    <InstructionsStep>
+                      {t('setup:connect.instruction9')}
+                    </InstructionsStep>
+                    <FormField label={t('setup:connect.integrationTokenLabel')}>
+                      <TextInput
+                        id="integrationToken"
+                        name="integrationToken"
+                      />
+                    </FormField>
+                  </InstructionsColumnText>
+                  <InstructionsColumnImage>
+                    <Image src="../assets/setup/connect-9-copy-token-blur.png" />
+                  </InstructionsColumnImage>
+                </InstructionsColumns>
               </Box>
-              <InstructionsHeading>
-                {t('setup:connect.createIntegrationTitle')}
-              </InstructionsHeading>
-              <InstructionsColumns>
-                <InstructionsColumnText>
-                  <InstructionsStep>
-                    {t('setup:connect.instruction1')}
-                  </InstructionsStep>
-                  <InstructionsStep>
-                    <Translate i18nKey="connect.instruction2">
-                      Go to{' '}
-                      <Anchor href="https://www.notion.com/my-integrations">
-                        https://www.notion.com/my-integrations
-                      </Anchor>
-                      .
-                    </Translate>
-                  </InstructionsStep>
-                  <InstructionsStep>
-                    {t('setup:connect.instruction3')}
-                  </InstructionsStep>
-                </InstructionsColumnText>
-                <InstructionsColumnImage>
-                  <Image src="../assets/setup/connect-3-new-integration-wide.png" />
-                </InstructionsColumnImage>
-              </InstructionsColumns>
-
-              <InstructionsHeading>
-                {t('setup:connect.createNameSelectTitle')}
-              </InstructionsHeading>
-              <InstructionsColumns>
-                <InstructionsColumnText>
-                  <InstructionsStep>
-                    {t('setup:connect.instruction4')}
-                  </InstructionsStep>
-                  <InstructionsStep>
-                    {t('setup:connect.instruction5')}
-                  </InstructionsStep>
-                </InstructionsColumnText>
-                <InstructionsColumnImage>
-                  <Image src="../assets/setup/connect-4-5-name-and-workspace.png" />
-                </InstructionsColumnImage>
-              </InstructionsColumns>
-
-              <InstructionsHeading>
-                {t('setup:connect.configureCapabilitiesTitle')}
-              </InstructionsHeading>
-              <InstructionsDescription>
-                {t('setup:connect.configureCapabilitiesDescription')}
-              </InstructionsDescription>
-              <InstructionsColumns>
-                <InstructionsColumnText>
-                  <InstructionsStep>
-                    {t('setup:connect.instruction6')}
-                  </InstructionsStep>
-                  <InstructionsStep>
-                    {t('setup:connect.instruction7')}
-                  </InstructionsStep>
-                </InstructionsColumnText>
-                <InstructionsColumnImage>
-                  <Image src="../assets/setup/connect-6-7-capabilities.png" />
-                </InstructionsColumnImage>
-              </InstructionsColumns>
-
-              <InstructionsHeading>
-                {t('setup:connect.getTokenTitle')}
-              </InstructionsHeading>
-              <InstructionsColumns>
-                <InstructionsColumnText>
-                  <InstructionsStep>
-                    {t('setup:connect.instruction8')}
-                  </InstructionsStep>
-                </InstructionsColumnText>
-                <InstructionsColumnImage>
-                  <Image src="../assets/setup/connect-8-submit-wide.png" />
-                </InstructionsColumnImage>
-              </InstructionsColumns>
-              <InstructionsColumns>
-                <InstructionsColumnText>
-                  <InstructionsStep>
-                    {t('setup:connect.instruction9')}
-                  </InstructionsStep>
-                </InstructionsColumnText>
-                <InstructionsColumnImage>
-                  <Image src="../assets/setup/connect-9-copy-token-blur.png" />
-                </InstructionsColumnImage>
-              </InstructionsColumns>
+              <Box
+                direction="row"
+                gap="medium"
+                justify="end"
+                pad={{top: 'medium'}}
+              >
+                <Button type="submit" primary label={t('setup:connect.next')} />
+              </Box>
             </Box>
           )}
-          <Form<{integrationToken?: string}>
-            value={{integrationToken: undefined}}
-            onChange={({integrationToken}): void =>
-              setIntegrationToken(integrationToken)
-            }
-            // onSubmit={({ value }) => setIntegrationToken(value.integrationToken)}
-          >
-            <Box width="medium">
-              <FormField
-                name="integrationToken"
-                htmlFor="integrationToken"
-                label={t('setup:connect.integrationTokenLabel')}
-              >
-                <TextInput id="integrationToken" name="integrationToken" />
-              </FormField>
-            </Box>
-            <Box direction="row" gap="medium" justify="end">
-              <Button type="submit" primary label={t('setup:connect.next')} />
-            </Box>
-          </Form>
         </PageContent>
       </Page>
     </Grommet>
