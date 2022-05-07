@@ -2,9 +2,7 @@ import OptionsSync from 'webext-options-sync';
 
 const options = new OptionsSync({
   defaults: {
-    colorString: 'green',
-    anyBooleans: true,
-    numbersAreFine: 9001,
+    notionIntegrationToken: '',
   },
 
   // List of functions that are called when the extension is updated
