@@ -13,6 +13,9 @@ import {
   Form,
   FormField,
   Button,
+  Diagram,
+  Stack,
+  BoxProps,
 } from 'grommet';
 import {browser} from 'webextension-polyfill-ts';
 import {useCallback, useState} from 'react';
@@ -22,10 +25,12 @@ import {Translate, useTranslate} from '../util/i18n';
 type StepLabelState = 'complete' | 'active' | 'upcoming';
 
 const StepLabel: React.FC<{
-  num: string;
+  id: string;
   label: string;
+  num: string;
   state: StepLabelState;
-}> = ({label, num, state}) => {
+  pad: BoxProps['pad'];
+}> = ({id, label, num, pad, state}) => {
   let background: BackgroundType;
   switch (state) {
     case 'active':
@@ -41,7 +46,7 @@ const StepLabel: React.FC<{
       throw new Error('Unhandled step label state');
   }
   return (
-    <Box direction="row" align="center" gap="xsmall">
+    <Box direction="row" align="center" gap="xsmall" id={id} pad={pad}>
       <Box
         round="full"
         background={background}
@@ -164,28 +169,54 @@ const Options: React.FC = () => {
               </Heading>
             </Box>
           </Header>
-          <Box
-            direction="row"
-            background="light-2"
-            pad="small"
-            justify="between"
-          >
-            <StepLabel
-              state={stepLabelState('connect')}
-              num={t('setup:connect.stepNumber')}
-              label={t('setup:connect.stepLabel')}
+          <Stack>
+            <Box
+              direction="row"
+              background="light-2"
+              pad="small"
+              justify="between"
+            >
+              <StepLabel
+                id="setup-step1"
+                label={t('setup:connect.stepLabel')}
+                num={t('setup:connect.stepNumber')}
+                state={stepLabelState('connect')}
+                pad={{right: 'medium'}}
+              />
+              <StepLabel
+                id="setup-step2"
+                label={t('setup:select.stepLabel')}
+                num={t('setup:select.stepNumber')}
+                state={stepLabelState('select')}
+                pad={{left: 'medium', right: 'medium'}}
+              />
+              <StepLabel
+                id="setup-step3"
+                label={t('setup:start.stepLabel')}
+                num={t('setup:select.stepNumber')}
+                state={stepLabelState('start')}
+                pad={{left: 'medium'}}
+              />
+            </Box>
+            <Diagram
+              connections={[
+                {
+                  fromTarget: 'setup-step1',
+                  toTarget: 'setup-step2',
+                  thickness: '2px',
+                  color: step === 'connect' ? 'status-unknown' : 'brand',
+                  anchor: 'horizontal',
+                },
+                {
+                  fromTarget: 'setup-step2',
+                  toTarget: 'setup-step3',
+                  thickness: '2px',
+                  color: step === 'start' ? 'brand' : 'status-unknown',
+                  anchor: 'horizontal',
+                },
+              ]}
             />
-            <StepLabel
-              state={stepLabelState('select')}
-              num={t('setup:select.stepNumber')}
-              label={t('setup:select.stepLabel')}
-            />
-            <StepLabel
-              state={stepLabelState('start')}
-              num={t('setup:select.stepNumber')}
-              label={t('setup:start.stepLabel')}
-            />
-          </Box>
+          </Stack>
           {step === 'connect' && (
             <Box>
               <Heading level={2} size="2" margin={{bottom: 'xxsmall'}}>
