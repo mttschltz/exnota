@@ -16,9 +16,10 @@ import {
   Diagram,
   Stack,
   BoxProps,
+  Form,
 } from 'grommet';
 import {browser} from 'webextension-polyfill-ts';
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {BackgroundType} from 'grommet/utils';
 import {hpe} from 'grommet-theme-hpe';
 import {Translate, useTranslate} from '../util/i18n';
@@ -113,34 +114,52 @@ type Options = Parameters<typeof optionsConfig['setAll']>[0];
 
 const useOptions = (): {
   loaded: boolean;
-  setIntegrationToken: (token: string) => void;
   notionIntegrationToken: string;
+  synced: boolean;
+  formRef: React.RefObject<HTMLFormElement>;
+  values: {
+    notionIntegrationToken: string;
+  };
 } => {
-  const [opts, setOpts] = useState<Options>({
+  const [values, setValues] = useState<Options>({
     notionIntegrationToken: '',
   });
-  const setNotionIntegrationToken = useCallback((token: string) => {
-    setOpts((state) => {
-      const newOpts = {...state, notionIntegrationToken: token ?? ''};
-      optionsConfig.set(newOpts);
-      return newOpts;
-    });
-  }, []);
-  const [loaded, setLoaded] = useState(false);
-
   useEffect(() => {
-    async function loadOptions(): Promise<void> {
-      const o = await optionsConfig.getAll();
-      setOpts(o);
-      setLoaded(true);
-    }
-    loadOptions();
-  }, []);
+    const fetch = async (): Promise<void> => {
+      const opts = await optionsConfig.getAll();
+      setValues(opts);
+    };
+    fetch();
+  });
+  const [loaded] = useState(false);
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const [synced, setSynced] = useState(false);
+  useEffect(() => {
+    const sync = async (): Promise<void> => {
+      console.log('abc before syncing');
+      if (formRef.current) {
+        if (synced) {
+          // Need to resync otherwise it doesn't pull in the initial value. Maybe because, at time
+          // of writing, the input isn't rendered the first time the form is rendered, as due to
+          // options.synced being false.
+          await optionsConfig.stopSyncForm();
+        }
+        console.log('abc syncing');
+        await optionsConfig.syncForm(formRef.current);
+      }
+      console.log('abc after syncing');
+      setSynced(true);
+    };
+    sync();
+  }, [synced]);
 
   return {
     loaded,
-    setIntegrationToken: setNotionIntegrationToken,
-    notionIntegrationToken: opts.notionIntegrationToken,
+    notionIntegrationToken: values.notionIntegrationToken,
+    synced,
+    formRef,
+    values,
   };
 };
 
@@ -192,218 +211,214 @@ const Options: React.FC = () => {
     } else {
       setStep('select');
     }
-  }, [options]);
+  }, [options.notionIntegrationToken]);
 
   return (
     <Grommet theme={hpe}>
       <Page kind="narrow" pad={{bottom: 'xlarge'}}>
         <PageContent>
-          {options.loaded && (
-            <>
-              <Header>
-                <Box>
-                  <Heading level="1" size="2">
-                    {t('setup:title')}
-                  </Heading>
-                </Box>
-                <Box align="center" direction="row" gap="xsmall">
-                  <Image
-                    width="36px"
-                    height="36px"
-                    src="../assets/icons/favicon-48x48.png"
-                  />{' '}
-                  <Heading level="3" size="4" alignSelf="center">
-                    {browser.i18n.getMessage('extensionName')}
-                  </Heading>
-                </Box>
-              </Header>
-              <Stack>
-                <Box
-                  direction="row"
-                  background="light-2"
-                  pad="small"
-                  justify="between"
-                >
-                  <StepLabel
-                    id="setup-step1"
-                    label={t('setup:connect.stepLabel')}
-                    num={t('setup:connect.stepNumber')}
-                    state={stepLabelState('connect')}
-                    pad={{right: 'medium'}}
-                  />
-                  <StepLabel
-                    id="setup-step2"
-                    label={t('setup:select.stepLabel')}
-                    num={t('setup:select.stepNumber')}
-                    state={stepLabelState('select')}
-                    pad={{left: 'medium', right: 'medium'}}
-                  />
-                  <StepLabel
-                    id="setup-step3"
-                    label={t('setup:start.stepLabel')}
-                    num={t('setup:start.stepNumber')}
-                    state={stepLabelState('start')}
-                    pad={{left: 'medium'}}
-                  />
-                </Box>
-                <Diagram
-                  connections={[
-                    {
-                      fromTarget: 'setup-step1',
-                      toTarget: 'setup-step2',
-                      thickness: '2px',
-                      color: step === 'connect' ? 'status-unknown' : 'brand',
-                      anchor: 'horizontal',
-                    },
-                    {
-                      fromTarget: 'setup-step2',
-                      toTarget: 'setup-step3',
-                      thickness: '2px',
-                      color: step === 'start' ? 'brand' : 'status-unknown',
-                      anchor: 'horizontal',
-                    },
-                  ]}
-                />
-              </Stack>
-              {step === 'connect' && (
-                <Box>
+          <Form ref={options.formRef}>
+            {options.synced && (
+              <>
+                <Header>
                   <Box>
-                    <Heading level={2} size="2" margin={{bottom: 'xxsmall'}}>
-                      {t('setup:connect.title')}
+                    <Heading level="1" size="2">
+                      {t('setup:title')}
                     </Heading>
-                    <Paragraph fill={true} margin={{top: 'none'}}>
-                      {t('setup:connect.description')}
-                    </Paragraph>
-                    <Box
-                      round="small"
-                      pad="small"
-                      border="all"
-                      margin={{bottom: 'large'}}
-                    >
-                      {t('setup:connect.adminReminder')}
-                    </Box>
-                    <InstructionsHeading>
-                      {t('setup:connect.createIntegrationTitle')}
-                    </InstructionsHeading>
-                    <InstructionsColumns>
-                      <InstructionsColumnText>
-                        <InstructionsStep>
-                          {t('setup:connect.instruction1')}
-                        </InstructionsStep>
-                        <InstructionsStep>
-                          <Translate i18nKey="connect.instruction2">
-                            Go to{' '}
-                            <Anchor href="https://www.notion.com/my-integrations">
-                              https://www.notion.com/my-integrations
-                            </Anchor>
-                            .
-                          </Translate>
-                        </InstructionsStep>
-                        <InstructionsStep>
-                          {t('setup:connect.instruction3')}
-                        </InstructionsStep>
-                      </InstructionsColumnText>
-                      <InstructionsColumnImage>
-                        <Image src="../assets/setup/connect-3-new-integration-wide.png" />
-                      </InstructionsColumnImage>
-                    </InstructionsColumns>
-
-                    <InstructionsHeading>
-                      {t('setup:connect.createNameSelectTitle')}
-                    </InstructionsHeading>
-                    <InstructionsColumns>
-                      <InstructionsColumnText>
-                        <InstructionsStep>
-                          {t('setup:connect.instruction4')}
-                        </InstructionsStep>
-                        <InstructionsStep>
-                          {t('setup:connect.instruction5')}
-                        </InstructionsStep>
-                      </InstructionsColumnText>
-                      <InstructionsColumnImage>
-                        <Image src="../assets/setup/connect-4-5-name-and-workspace.png" />
-                      </InstructionsColumnImage>
-                    </InstructionsColumns>
-
-                    <InstructionsHeading>
-                      {t('setup:connect.configureCapabilitiesTitle')}
-                    </InstructionsHeading>
-                    <InstructionsDescription>
-                      {t('setup:connect.configureCapabilitiesDescription')}
-                    </InstructionsDescription>
-                    <InstructionsColumns>
-                      <InstructionsColumnText>
-                        <InstructionsStep>
-                          {t('setup:connect.instruction6')}
-                        </InstructionsStep>
-                        <InstructionsStep>
-                          {t('setup:connect.instruction7')}
-                        </InstructionsStep>
-                      </InstructionsColumnText>
-                      <InstructionsColumnImage>
-                        <Image src="../assets/setup/connect-6-7-capabilities.png" />
-                      </InstructionsColumnImage>
-                    </InstructionsColumns>
-
-                    <InstructionsHeading>
-                      {t('setup:connect.getTokenTitle')}
-                    </InstructionsHeading>
-                    <InstructionsColumns>
-                      <InstructionsColumnText>
-                        <InstructionsStep>
-                          {t('setup:connect.instruction8')}
-                        </InstructionsStep>
-                      </InstructionsColumnText>
-                      <InstructionsColumnImage>
-                        <Image src="../assets/setup/connect-8-submit-wide.png" />
-                      </InstructionsColumnImage>
-                    </InstructionsColumns>
-                    <InstructionsColumns>
-                      <InstructionsColumnText>
-                        <InstructionsStep>
-                          {t('setup:connect.instruction9')}
-                        </InstructionsStep>
-                        <FormField
-                          label={t('setup:connect.integrationTokenLabel')}
-                        >
-                          <TextInput
-                            id="integrationToken"
-                            name="integrationToken"
-                            value={options.notionIntegrationToken}
-                            onChange={async (e): Promise<void> => {
-                              await options.setIntegrationToken(
-                                e.currentTarget.value
-                              );
-                            }}
-                          />
-                        </FormField>
-                        {showTokenError && (
-                          <Text color="status-critical">
-                            {t('setup:connect.integrationTokenMissing')}
-                          </Text>
-                        )}
-                      </InstructionsColumnText>
-                      <InstructionsColumnImage>
-                        <Image src="../assets/setup/connect-9-copy-token-blur.png" />
-                      </InstructionsColumnImage>
-                    </InstructionsColumns>
                   </Box>
+                  <Box align="center" direction="row" gap="xsmall">
+                    <Image
+                      width="36px"
+                      height="36px"
+                      src="../assets/icons/favicon-48x48.png"
+                    />{' '}
+                    <Heading level="3" size="4" alignSelf="center">
+                      {browser.i18n.getMessage('extensionName')}
+                    </Heading>
+                  </Box>
+                </Header>
+                <Stack>
                   <Box
                     direction="row"
-                    gap="medium"
-                    justify="end"
-                    pad={{top: 'medium'}}
+                    background="light-2"
+                    pad="small"
+                    justify="between"
                   >
-                    <Button
-                      onClick={(): void => connect()}
-                      primary
-                      label={t('setup:connect.next')}
+                    <StepLabel
+                      id="setup-step1"
+                      label={t('setup:connect.stepLabel')}
+                      num={t('setup:connect.stepNumber')}
+                      state={stepLabelState('connect')}
+                      pad={{right: 'medium'}}
+                    />
+                    <StepLabel
+                      id="setup-step2"
+                      label={t('setup:select.stepLabel')}
+                      num={t('setup:select.stepNumber')}
+                      state={stepLabelState('select')}
+                      pad={{left: 'medium', right: 'medium'}}
+                    />
+                    <StepLabel
+                      id="setup-step3"
+                      label={t('setup:start.stepLabel')}
+                      num={t('setup:start.stepNumber')}
+                      state={stepLabelState('start')}
+                      pad={{left: 'medium'}}
                     />
                   </Box>
-                </Box>
-              )}
-            </>
-          )}
+                  <Diagram
+                    connections={[
+                      {
+                        fromTarget: 'setup-step1',
+                        toTarget: 'setup-step2',
+                        thickness: '2px',
+                        color: step === 'connect' ? 'status-unknown' : 'brand',
+                        anchor: 'horizontal',
+                      },
+                      {
+                        fromTarget: 'setup-step2',
+                        toTarget: 'setup-step3',
+                        thickness: '2px',
+                        color: step === 'start' ? 'brand' : 'status-unknown',
+                        anchor: 'horizontal',
+                      },
+                    ]}
+                  />
+                </Stack>
+                {step === 'connect' && (
+                  <Box>
+                    <Box>
+                      <Heading level={2} size="2" margin={{bottom: 'xxsmall'}}>
+                        {t('setup:connect.title')}
+                      </Heading>
+                      <Paragraph fill={true} margin={{top: 'none'}}>
+                        {t('setup:connect.description')}
+                      </Paragraph>
+                      <Box
+                        round="small"
+                        pad="small"
+                        border="all"
+                        margin={{bottom: 'large'}}
+                      >
+                        {t('setup:connect.adminReminder')}
+                      </Box>
+                      <InstructionsHeading>
+                        {t('setup:connect.createIntegrationTitle')}
+                      </InstructionsHeading>
+                      <InstructionsColumns>
+                        <InstructionsColumnText>
+                          <InstructionsStep>
+                            {t('setup:connect.instruction1')}
+                          </InstructionsStep>
+                          <InstructionsStep>
+                            <Translate i18nKey="connect.instruction2">
+                              Go to{' '}
+                              <Anchor href="https://www.notion.com/my-integrations">
+                                https://www.notion.com/my-integrations
+                              </Anchor>
+                              .
+                            </Translate>
+                          </InstructionsStep>
+                          <InstructionsStep>
+                            {t('setup:connect.instruction3')}
+                          </InstructionsStep>
+                        </InstructionsColumnText>
+                        <InstructionsColumnImage>
+                          <Image src="../assets/setup/connect-3-new-integration-wide.png" />
+                        </InstructionsColumnImage>
+                      </InstructionsColumns>
+
+                      <InstructionsHeading>
+                        {t('setup:connect.createNameSelectTitle')}
+                      </InstructionsHeading>
+                      <InstructionsColumns>
+                        <InstructionsColumnText>
+                          <InstructionsStep>
+                            {t('setup:connect.instruction4')}
+                          </InstructionsStep>
+                          <InstructionsStep>
+                            {t('setup:connect.instruction5')}
+                          </InstructionsStep>
+                        </InstructionsColumnText>
+                        <InstructionsColumnImage>
+                          <Image src="../assets/setup/connect-4-5-name-and-workspace.png" />
+                        </InstructionsColumnImage>
+                      </InstructionsColumns>
+
+                      <InstructionsHeading>
+                        {t('setup:connect.configureCapabilitiesTitle')}
+                      </InstructionsHeading>
+                      <InstructionsDescription>
+                        {t('setup:connect.configureCapabilitiesDescription')}
+                      </InstructionsDescription>
+                      <InstructionsColumns>
+                        <InstructionsColumnText>
+                          <InstructionsStep>
+                            {t('setup:connect.instruction6')}
+                          </InstructionsStep>
+                          <InstructionsStep>
+                            {t('setup:connect.instruction7')}
+                          </InstructionsStep>
+                        </InstructionsColumnText>
+                        <InstructionsColumnImage>
+                          <Image src="../assets/setup/connect-6-7-capabilities.png" />
+                        </InstructionsColumnImage>
+                      </InstructionsColumns>
+
+                      <InstructionsHeading>
+                        {t('setup:connect.getTokenTitle')}
+                      </InstructionsHeading>
+                      <InstructionsColumns>
+                        <InstructionsColumnText>
+                          <InstructionsStep>
+                            {t('setup:connect.instruction8')}
+                          </InstructionsStep>
+                        </InstructionsColumnText>
+                        <InstructionsColumnImage>
+                          <Image src="../assets/setup/connect-8-submit-wide.png" />
+                        </InstructionsColumnImage>
+                      </InstructionsColumns>
+                      <InstructionsColumns>
+                        <InstructionsColumnText>
+                          <InstructionsStep>
+                            {t('setup:connect.instruction9')}
+                          </InstructionsStep>
+                          <FormField
+                            label={t('setup:connect.integrationTokenLabel')}
+                          >
+                            <TextInput
+                              id="notionIntegrationToken"
+                              name="notionIntegrationToken"
+                            />
+                          </FormField>
+                          {showTokenError && (
+                            <Text color="status-critical">
+                              {t('setup:connect.integrationTokenMissing')}
+                            </Text>
+                          )}
+                        </InstructionsColumnText>
+                        <InstructionsColumnImage>
+                          <Image src="../assets/setup/connect-9-copy-token-blur.png" />
+                        </InstructionsColumnImage>
+                      </InstructionsColumns>
+                    </Box>
+                    <Box
+                      direction="row"
+                      gap="medium"
+                      justify="end"
+                      pad={{top: 'medium'}}
+                    >
+                      <Button
+                        onClick={(): void => connect()}
+                        primary
+                        label={t('setup:connect.next')}
+                      />
+                    </Box>
+                  </Box>
+                )}
+              </>
+            )}
+          </Form>
         </PageContent>
       </Page>
     </Grommet>
