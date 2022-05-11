@@ -130,14 +130,13 @@ const useOptions = (): {
       setValues(opts);
     };
     fetch();
-  });
+  }, []);
   const [loaded] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
   const [synced, setSynced] = useState(false);
   useEffect(() => {
     const sync = async (): Promise<void> => {
-      console.log('abc before syncing');
       if (formRef.current) {
         if (synced) {
           // Need to resync otherwise it doesn't pull in the initial value. Maybe because, at time
@@ -145,10 +144,8 @@ const useOptions = (): {
           // options.synced being false.
           await optionsConfig.stopSyncForm();
         }
-        console.log('abc syncing');
         await optionsConfig.syncForm(formRef.current);
       }
-      console.log('abc after syncing');
       setSynced(true);
     };
     sync();
@@ -204,7 +201,6 @@ const Options: React.FC = () => {
     },
     [step]
   );
-
   const connect = useCallback(() => {
     if (options.notionIntegrationToken === '') {
       setShowTokenError(true);
