@@ -33,10 +33,14 @@ i18n
 type Namespace = Exclude<keyof typeof resources['en'], 'common'>;
 
 const useTranslate = <T extends Namespace>(
-  x: T
+  x: T[]
 ): TFunction<(T | 'common')[]> => {
-  const [t] = useTranslation([x, 'common']);
+  const [t] = useTranslation([...x, 'common']);
   return t;
 };
 
-export {useTranslate, resources, Trans as Translate};
+const translate: TFunction<(keyof typeof resources['en'])[]> = (key) => {
+  return i18n.t(key);
+};
+
+export {useTranslate, resources, translate, Trans as Translate};

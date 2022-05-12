@@ -164,7 +164,7 @@ type Step = 'connect' | 'select' | 'start';
 
 const Options: React.FC = () => {
   const [step, setStep] = useState<Step>('connect');
-  const t = useTranslate('setup');
+  const t = useTranslate(['setup']);
   const options = useOptions();
   const [showTokenError, setShowTokenError] = useState(false);
 
