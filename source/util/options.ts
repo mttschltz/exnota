@@ -4,6 +4,7 @@ const options = new OptionsSync({
   defaults: {
     notionIntegrationToken: '',
   },
+  logging: true,
 
   // List of functions that are called when the extension is updated
   // migrations: [

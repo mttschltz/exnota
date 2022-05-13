@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {isEqual} from 'lodash';
 import {
   Anchor,
   Grommet,
@@ -18,12 +19,14 @@ import {
   BoxProps,
   Form,
 } from 'grommet';
+import useEventListener from '@use-it/event-listener';
 import {browser} from 'webextension-polyfill-ts';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {BackgroundType} from 'grommet/utils';
 import {hpe} from 'grommet-theme-hpe';
 import {Translate, useTranslate} from '../util/i18n';
 import {options as optionsConfig} from '../util/options';
+import {validateIntegrationToken} from '../util/notion';
 
 type StepLabelState = 'complete' | 'active' | 'upcoming';
 
@@ -112,8 +115,22 @@ const InstructionsStep: React.FC = ({children}) => {
 
 type Options = Parameters<typeof optionsConfig['setAll']>[0];
 
+const useApiValidator = (): {
+  validateToken: (
+    token: string
+  ) => Promise<ReturnType<typeof validateIntegrationToken>>;
+} => {
+  const validateToken = useCallback(async (token: string): Promise<
+    ReturnType<typeof validateIntegrationToken>
+  > => {
+    return validateIntegrationToken(token);
+  }, []);
+  return {
+    validateToken,
+  };
+};
+
 const useOptions = (): {
-  loaded: boolean;
   notionIntegrationToken: string;
   synced: boolean;
   formRef: React.RefObject<HTMLFormElement>;
@@ -124,16 +141,24 @@ const useOptions = (): {
   const [values, setValues] = useState<Options>({
     notionIntegrationToken: '',
   });
-  useEffect(() => {
-    const fetch = async (): Promise<void> => {
-      const opts = await optionsConfig.getAll();
+  const getAllAndSet = useCallback(async (): Promise<void> => {
+    const opts = await optionsConfig.getAll();
+    if (!isEqual(opts, values)) {
       setValues(opts);
-    };
-    fetch();
-  }, []);
-  const [loaded] = useState(false);
+    }
+  }, [values]);
+  useEffect(() => {
+    getAllAndSet();
+  }, [getAllAndSet]);
 
   const formRef = useRef<HTMLFormElement>(null);
+  useEventListener(
+    'options-sync:form-synced',
+    getAllAndSet,
+    formRef.current,
+    {}
+  );
+
   const [synced, setSynced] = useState(false);
   useEffect(() => {
     const sync = async (): Promise<void> => {
@@ -152,10 +177,9 @@ const useOptions = (): {
   }, [synced]);
 
   return {
-    loaded,
+    formRef,
     notionIntegrationToken: values.notionIntegrationToken,
     synced,
-    formRef,
     values,
   };
 };
@@ -167,6 +191,7 @@ const Options: React.FC = () => {
   const t = useTranslate(['setup']);
   const options = useOptions();
   const [showTokenError, setShowTokenError] = useState(false);
+  const apiValidator = useApiValidator();
 
   const stepLabelState = useCallback(
     (label: Step): StepLabelState => {
@@ -201,13 +226,24 @@ const Options: React.FC = () => {
     },
     [step]
   );
-  const connect = useCallback(() => {
+  const connect = useCallback(async () => {
     if (options.notionIntegrationToken === '') {
       setShowTokenError(true);
-    } else {
-      setStep('select');
+      return;
     }
-  }, [options.notionIntegrationToken]);
+    const result = await apiValidator.validateToken(
+      options.notionIntegrationToken
+    );
+    if (result === 'success') {
+      setStep('select');
+    } else if (result === 'invalid-token') {
+      // TODO: Update error message
+      setShowTokenError(true);
+    } else {
+      // TODO: update error message
+      setShowTokenError(true);
+    }
+  }, [apiValidator, options.notionIntegrationToken]);
 
   return (
     <Grommet theme={hpe}>
@@ -405,7 +441,7 @@ const Options: React.FC = () => {
                       pad={{top: 'medium'}}
                     >
                       <Button
-                        onClick={(): void => connect()}
+                        onClick={connect}
                         primary
                         label={t('setup:connect.next')}
                       />
