@@ -1,5 +1,5 @@
 import {browser} from 'webextension-polyfill-ts';
-import {listen as notionListen} from '../util/notion';
+import {listen as notionListen} from '../message/notion';
 import {options} from '../util/options';
 import {translate} from '../util/i18n';
 

@@ -26,7 +26,7 @@ import {BackgroundType} from 'grommet/utils';
 import {hpe} from 'grommet-theme-hpe';
 import {Translate, useTranslate} from '../util/i18n';
 import {options as optionsConfig} from '../util/options';
-import {validateIntegrationToken} from '../util/notion';
+import {validateIntegrationToken} from '../message/notion';
 
 type StepLabelState = 'complete' | 'active' | 'upcoming';
 
@@ -236,7 +236,7 @@ const Options: React.FC = () => {
     );
     if (result === 'success') {
       setStep('select');
-    } else if (result === 'invalid-token') {
+    } else if (result === 'notion-invalid-token') {
       // TODO: Update error message
       setShowTokenError(true);
     } else {

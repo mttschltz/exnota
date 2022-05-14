@@ -1,7 +1,15 @@
 import {onMessage, sendMessage} from 'webext-bridge';
-import {MessageResult} from './webext-bridge-shared';
+import {validateToken} from '../background/api/notion';
 
 let listened = false;
+
+type MessageStatus =
+  | 'success'
+  | 'notion-invalid-token'
+  | 'notion-rate-limit-error'
+  | 'notion-request-error' // an error likely inside our control
+  | 'notion-other-error' // an error likely outside our control
+  | 'unknown-error';
 
 const listen = (): void => {
   if (listened) {
@@ -9,15 +17,14 @@ const listen = (): void => {
   }
   listened = true;
 
-  onMessage('setup.validate-notion-integration-token', ({data}) => {
-    if (data.token === 'the only valid token') {
-      return Promise.resolve({result: 'success' as const});
-    }
-    return Promise.resolve({result: 'network-error' as const});
+  onMessage('setup.validate-notion-integration-token', async ({data}) => {
+    const result = await validateToken(data.token);
+
+    return result;
   });
 };
 
-type NotionMessageResult = MessageResult | 'messaging-error';
+type NotionMessageResult = MessageStatus | 'messaging-error';
 
 const validateIntegrationToken = async (
   token: string
@@ -34,4 +41,5 @@ const validateIntegrationToken = async (
   }
 };
 
+export type {MessageStatus};
 export {listen, validateIntegrationToken};

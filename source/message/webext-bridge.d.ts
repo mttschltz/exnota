@@ -1,5 +1,9 @@
 import {ProtocolWithReturn} from 'webext-bridge';
-import {MessageResponse} from './webext-bridge-shared';
+import {MessageStatus} from './notion';
+
+interface MessageResponse {
+  result: ApiStatus;
+}
 
 declare module 'webext-bridge' {
   export interface ProtocolMap {
