@@ -1,7 +1,7 @@
 import { Result, resultError, resultOk } from "../util/result"
 
 interface Options {
-  _notionIntegrationToken: string
+  notionIntegrationToken: string
 }
 
 class OptionsImpl implements Options {
@@ -12,7 +12,7 @@ class OptionsImpl implements Options {
   }
 
   public get notionIntegrationToken(): string {
-    return this._notionIntegrationToken
+    return this.notionIntegrationToken
   }
 }
 

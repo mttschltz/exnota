@@ -1,21 +1,29 @@
-import { Result, resultError } from "../../util/result"
+import { options } from "../../util/options"
+import { Result, resultError, resultOk } from "../../util/result"
 import { OptionsError } from "../options"
+import type { Options } from "../options"
 
 
-type UseCaseOptionsError = OptionsError
+type UseCaseOptionsError = OptionsError | 'getting-options'
+
+interface GetTokenRepo {
+    readonly getOptions: () => Promise<Result<Options, 'error'>> 
+}
 
 interface GetTokenInteractor {
     readonly getToken: () => Promise<Result<string | undefined, UseCaseOptionsError>>
 }
 
-const newGetTokenInteractor = (/* TODO: options repo */): GetTokenInteractor => {
+const newGetTokenInteractor = (repo: GetTokenRepo): GetTokenInteractor => {
     const GetToken: GetTokenInteractor = {
-        getToken() {
-            // TODO: Make options repo dependency that returns domain object
-            // TODO: fetch here and return
+        async getToken(): Promise<Result<string | undefined, UseCaseOptionsError>> {
+            const result = await repo.getOptions()
+
+            if (!result.ok) {
+                return resultError('Could not get options', 'getting-options')
+            }
             // TODO: outside this, implement options dependency as repo taht returns Options domain object
-            const result = resultError<string, UseCaseOptionsError>('Not implemented', 'missing-notion-integration-token')
-            return Promise.resolve(result)
+            return resultOk(result.value.notionIntegrationToken)
         }
     }
     return GetToken
