@@ -26,7 +26,8 @@ import {BackgroundType} from 'grommet/utils';
 import {hpe} from 'grommet-theme-hpe';
 import {Translate, useTranslate} from '../util/i18n';
 import {options as optionsConfig} from '../util/options';
-import {validateIntegrationToken} from '../message/notion';
+import {getToken, validateIntegrationToken} from '../background/message/notion';
+import { createLog } from '../util/log';
 
 type StepLabelState = 'complete' | 'active' | 'upcoming';
 
@@ -142,6 +143,14 @@ const useOptions = (): {
     notionIntegrationToken: '',
   });
   const getAllAndSet = useCallback(async (): Promise<void> => {
+    // TODO: Remove; Just a test fetch of token
+    const token = await getToken()
+    if (token.status === 'success') {
+      createLog('options').info('getAllAndSet success' + token.status)
+    } else {
+      createLog('options').info('getAllAndSet fail: ' + token.status)
+    }
+    
     const opts = await optionsConfig.getAll();
     if (!isEqual(opts, values)) {
       setValues(opts);

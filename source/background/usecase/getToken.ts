@@ -1,4 +1,3 @@
-import { options } from "../../util/options"
 import { Result, resultError, resultOk } from "../../util/result"
 import { OptionsError } from "../options"
 import type { Options } from "../options"
@@ -29,4 +28,5 @@ const newGetTokenInteractor = (repo: GetTokenRepo): GetTokenInteractor => {
     return GetToken
 }
 
+export type { UseCaseOptionsError }
 export { newGetTokenInteractor }
