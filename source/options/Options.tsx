@@ -144,11 +144,11 @@ const useOptions = (): {
   });
   const getAllAndSet = useCallback(async (): Promise<void> => {
     // TODO: Remove; Just a test fetch of token
-    const token = await getToken()
-    if (token.status === 'success') {
-      createLog('options').info('getAllAndSet success' + token.status)
+    const result = await getToken()
+    if (result.status === 'success') {
+      createLog('options').info('getAllAndSet success: ' + result.token)
     } else {
-      createLog('options').info('getAllAndSet fail: ' + token.status)
+      createLog('options').info('getAllAndSet fail: ' + result.status)
     }
     
     const opts = await optionsConfig.getAll();

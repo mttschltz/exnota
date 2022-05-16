@@ -1,8 +1,7 @@
 import {onMessage, sendMessage} from 'webext-bridge';
-import { Result, resultError } from '../../util/result';
+import { createLog } from '../../util/log';
 import {validateToken} from '../api/notion';
-import { Options } from '../options';
-import { newGetTokenInteractor } from '../usecase/getToken';
+import { newGetTokenInteractor, GetTokenRepo } from '../usecase/getToken';
 import { GetTokenResponse } from './webext-bridge';
 
 let listened = false;
@@ -15,13 +14,8 @@ type MessageStatus =
   | 'notion-other-error' // an error likely outside our control
   | 'unknown-error';
 
-const startGetTokenListener = (): void => {
-  const interactor = newGetTokenInteractor({
-    getOptions: (): Promise<Result<Options, "error">> => {
-      const result = resultError<Options, 'error'>('not implemented', 'error')
-      return Promise.resolve(result)
-    }
-  })
+const startGetTokenListener = (repo: GetTokenRepo): void => {
+  const interactor = newGetTokenInteractor(repo)
   
   onMessage('notion.getToken', async () => {
     const result = await interactor.getToken()

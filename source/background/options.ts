@@ -1,6 +1,4 @@
-import { Result, resultError, resultOk } from "../util/result"
-
-interface Options {
+type Options = {
   notionIntegrationToken: string
 }
 
@@ -12,19 +10,17 @@ class OptionsImpl implements Options {
   }
 
   public get notionIntegrationToken(): string {
-    return this.notionIntegrationToken
+    return this._notionIntegrationToken
   }
+
+  // TODO: Add length requirement to setter for notionIntegrationToken
 }
 
 type OptionsError = 'missing-notion-integration-token'
 
-const createOptions = (notionIntegrationToken: string): Result<Options, OptionsError> => {
-  if (!notionIntegrationToken) {
-    return resultError('Missing notion integration token', 'missing-notion-integration-token')
-  }
-  
-  return resultOk(new OptionsImpl(notionIntegrationToken))
+const newOptions = (notionIntegrationToken: string): Options => {
+  return new OptionsImpl(notionIntegrationToken)
 }
 
 export type { Options, OptionsError }
-export { createOptions }
+export { newOptions }

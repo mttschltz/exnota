@@ -1,5 +1,5 @@
 import {APIErrorCode, Client, isNotionClientError} from '@notionhq/client';
-import {createLog} from '../../util/log';
+import {createLog, unknownError} from '../../util/log';
 
 type ApiStatus =
   | 'success'
@@ -15,9 +15,7 @@ interface ApiResponse {
 
 const log = createLog('background');
 
-const isErrorish = (e: unknown): e is {name: string; message: string} => {
-  return (e as Error).message !== undefined && (e as Error).name !== undefined;
-};
+
 
 // TODO: Do we need to pass the token here (or through messaging) or can we pull from options?
 const validateToken = async (token: string): Promise<ApiResponse> => {
@@ -89,16 +87,8 @@ const validateToken = async (token: string): Promise<ApiResponse> => {
             result: 'notion-other-error',
           };
       }
-    } else if (isErrorish(e)) {
-      log.error('Testing token: Error (unknown error)', {
-        messsage: e.message,
-        name: e.name,
-      });
-      return {
-        result: 'unknown-error',
-      };
     } else {
-      log.error('Testing token: Error (unknown error)');
+      log.error('Testing token: Error (unknown error)', unknownError(e));
       return {
         result: 'unknown-error',
       };

@@ -44,4 +44,15 @@ const createLog = (
   };
 };
 
-export {createLog};
+const isErrorish = (e: unknown): e is {name: string; message: string} => {
+  return (e as Error).message !== undefined && (e as Error).name !== undefined;
+};
+
+const unknownError = (e: unknown) => {
+  return isErrorish(e) ? {
+    messsage: e.message,
+    name: e.name,
+  } : undefined
+}
+
+export {createLog, unknownError};
