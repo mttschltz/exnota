@@ -1,10 +1,8 @@
 import { createLog } from "../../util/log"
-import { Result, resultError, resultOk } from "../../util/result"
-import { OptionsError } from "../options"
-import { OptionsRepo } from "../repo"
+import { Result, resultOk } from "../../util/result"
+import { GetRepoMethodError, OptionsRepo } from "../repo"
 
-
-type UseCaseOptionsError = OptionsError | 'getting-options'
+type UseCaseOptionsError = GetRepoMethodError<OptionsRepo['getOptions']>
 
 type GetTokenRepo = Pick<OptionsRepo, 'getOptions'>
 
@@ -21,7 +19,7 @@ const newGetTokenInteractor = (repo: GetTokenRepo): GetTokenInteractor => {
             log.info('GetTokenUsecase: Finished repo.getOptions')
             
             if (!result.ok) {
-                return resultError('Could not get options', 'getting-options')
+                return result
             }
             return resultOk(result.value.notionIntegrationToken)
         }

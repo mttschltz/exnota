@@ -16,11 +16,10 @@ class OptionsImpl implements Options {
   // TODO: Add length requirement to setter for notionIntegrationToken
 }
 
-type OptionsError = 'missing-notion-integration-token'
 
 const newOptions = (notionIntegrationToken: string): Options => {
   return new OptionsImpl(notionIntegrationToken)
 }
 
-export type { Options, OptionsError }
+export type { Options }
 export { newOptions }
