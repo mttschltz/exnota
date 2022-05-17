@@ -146,9 +146,9 @@ const useOptions = (): {
     // TODO: Remove; Just a test fetch of token
     const result = await getToken()
     if (result.status === 'success') {
-      createLog('options').info('getAllAndSet success: ' + result.token)
+      createLog('options', 'getAllAndSet').info('getAllAndSet success: ' + result.token)
     } else {
-      createLog('options').info('getAllAndSet fail: ' + result.status)
+      createLog('options', 'getAllAndSet').info('getAllAndSet fail: ' + result.status)
     }
     
     const opts = await optionsConfig.getAll();

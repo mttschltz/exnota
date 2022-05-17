@@ -10,37 +10,41 @@ type Data = Record<
   | Record<string, string | number | boolean>[]
 >;
 
-type Context = 'background' | 'options' | 'content';
+type Service = 'background' | 'options' | 'content';
 
 const info =
-  (context: Context) =>
+  (service: Service,
+    context: string) =>
   (message: string, data?: Data): void => {
-    console.log(`${context}: ${message}`, data);
+    console.log(`[${service}] ${context}: ${message}`, data);
   };
 
 const warn =
-  (context: Context) =>
+  (service: Service,
+    context: string) =>
   (message: string, data?: Data): void => {
-    console.warn(`${context}: ${message}`, data);
+    console.warn(`[${service}] ${context}: ${message}`, data);
   };
 
 const error =
-  (context: Context) =>
+  (service: Service,
+    context: string) =>
   (message: string, data?: Data): void => {
-    console.error(`${context}: ${message}`, data);
+    console.error(`[${service}] ${context}: ${message}`, data);
   };
 
 const createLog = (
-  context: Context
+  service: Service,
+  context: string
 ): {
   info: (message: string, data?: Data | undefined) => void;
   warn: (message: string, data?: Data | undefined) => void;
   error: (message: string, data?: Data | undefined) => void;
 } => {
   return {
-    info: info(context),
-    warn: warn(context),
-    error: error(context),
+    info: info(service, context),
+    warn: warn(service, context),
+    error: error(service, context),
   };
 };
 

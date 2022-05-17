@@ -1,5 +1,4 @@
 import {onMessage, sendMessage} from 'webext-bridge';
-import { createLog } from '../../util/log';
 import {validateToken} from '../api/notion';
 import { newGetTokenInteractor, GetTokenRepo } from '../usecase/getToken';
 import { GetTokenResponse } from './webext-bridge';

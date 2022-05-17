@@ -6,11 +6,10 @@ import { OptionsRepo } from '../repo';
 
 type OptionsSync = WebExtOptionsSync<Options>
 
-const log = createLog('background')
-
 const newOptionsRepo = (optionsSync: OptionsSync): OptionsRepo => {
     return {
         getOptions: async (): Promise<Result<Options, "options-sync">> => {
+            const log = createLog('background', 'GetOptionsRepo')
             try {
                 log.info('OptionsRepo: Starting optionsSync.getAll')
                 const values = await optionsSync.getAll()

@@ -13,7 +13,7 @@ interface ApiResponse {
   result: ApiStatus;
 }
 
-const log = createLog('background');
+const log = createLog('background', 'NotionAPI');
 
 
 

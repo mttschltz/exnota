@@ -6,7 +6,7 @@ type UseCaseOptionsError = GetRepoMethodError<OptionsRepo['getOptions']>
 
 type GetTokenRepo = Pick<OptionsRepo, 'getOptions'>
 
-const log = createLog('background')
+const log = createLog('background', 'GetTokenUsecase')
 interface GetTokenInteractor {
     readonly getToken: () => Promise<Result<string | undefined, UseCaseOptionsError>>
 }
@@ -14,9 +14,9 @@ interface GetTokenInteractor {
 const newGetTokenInteractor = (repo: GetTokenRepo): GetTokenInteractor => {
     const GetToken: GetTokenInteractor = {
         async getToken(): Promise<Result<string | undefined, UseCaseOptionsError>> {
-            log.info('GetTokenUsecase: Starting repo.getOptions')
+            log.info('Starting repo.getOptions')
             const result = await repo.getOptions()
-            log.info('GetTokenUsecase: Finished repo.getOptions')
+            log.info('Finished repo.getOptions')
             
             if (!result.ok) {
                 return result
