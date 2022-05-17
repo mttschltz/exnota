@@ -1,4 +1,5 @@
-{
+
+module.exports = {
   "presets": [
     [
       // Latest stable ECMAScript features
@@ -6,7 +7,7 @@
       {
         "useBuiltIns": false,
         // Do not transform modules to CJS
-        "modules": false,
+        "modules": "commonjs",
         "targets": {
           "chrome": "49",
           "firefox": "52",
