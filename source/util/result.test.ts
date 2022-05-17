@@ -38,33 +38,43 @@ import {
     })
     describe('Given an error Result', () => {
       describe('When resultError is called', () => {
-        describe('And only a message is provided', () => {
-          let result: Result<string, 'error'>
+        describe('And only a message and type are provided', () => {
+          let result: Result<string, 'error-type'>
           beforeEach(() => {
-            result = resultError('an error message', 'error')
+            result = resultError('an error message', 'error-type')
           })
           test('Then it returns the expected values', () => {
             expect(result.ok).toBe(false)
             assertResultError(result)
-            expect(result.message).toBe('an error message')
-            expect(result.error).toEqual(new Error('Result error'))
+            expect(result).toMatchObject({
+              message: 'an error message',
+              errorType: 'error-type',
+              error: new Error('Result error'),
+              ok: false,
+              metadata: {},
+            })
           })
         })
         describe('And an Error is provided', () => {
-          let result: Result<string, 'error'>
+          let result: Result<string, 'error-type'>
           let error: Error
           beforeEach(() => {
             error = new Error('an error')
-            result = resultError('an error message', 'error', error)
+            result = resultError('an error message', 'error-type', error)
           })
           test('Then it returns the expected values', () => {
-            expect(result.ok).toBe(false)
             assertResultError(result)
-            expect(result.error).toBe(error)
+            expect(result).toMatchObject({
+              message: 'an error message',
+              errorType: 'error-type',
+              error: new Error('an error'),
+              ok: false,
+              metadata: {},
+            })
           })
         })
         describe('And metadata is provided', () => {
-          let result: Result<string, 'error'>
+          let result: Result<string, 'error-type'>
           let metadata: ResultMetadata
           beforeEach(() => {
             metadata = {
@@ -76,12 +86,17 @@ import {
                 string: 'nested string',
               },
             }
-            result = resultError('an error message', 'error', undefined, metadata)
+            result = resultError('an error message', 'error-type', undefined, metadata)
           })
           test('Then it returns the expected values', () => {
-            expect(result.ok).toBe(false)
             assertResultError(result)
-            expect(result.metadata).toBe(metadata)
+            expect(result).toMatchObject({
+              message: 'an error message',
+              errorType: 'error-type',
+              error: new Error('Result error'),
+              ok: false,
+              metadata,
+            })
           })
         })
       })
@@ -104,9 +119,10 @@ import {
         describe('When an error object is provided', () => {
           test('Then Results is returned with the expected single error', () => {
             const error = new Error('error object')
-            const r = resultsError('error message', error)
+            const r = resultsError('error message', 'error-type', error)
             expect(r.firstErrorResult).toMatchObject({
               message: 'error message',
+              errorType: 'error-type',
               error: new Error('error object'),
               ok: false,
               metadata: {},

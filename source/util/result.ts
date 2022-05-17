@@ -89,7 +89,7 @@ function resultOk<T, E>(value: T): Result<T, E> {
   return new ResultOkImpl<T>(value);
 }
 
-function resultError<T, E>(
+function resultError<T, E extends string>(
   message: string,
   errorType: E,
   error?: Error,
@@ -99,6 +99,10 @@ function resultError<T, E>(
 }
 
 function isResult<T, E>(r: unknown): r is Result<T, E> {
+  if (!r) {
+    return false
+  }
+  
   if (typeof (r as Result<T,E>).ok !== 'boolean') {
     return false
   }
@@ -165,7 +169,7 @@ function resultsOk<T, E>(values: T[]): Results<T, E> {
   return new ResultsImpl(values.map((v) => resultOk(v)));
 }
 
-function resultsError<T, E>(
+function resultsError<T, E extends string>(
   message: string,
   errorType: E,
   error?: Error,
