@@ -1,4 +1,5 @@
 import {onMessage, sendMessage} from 'webext-bridge';
+import { createLog } from '../../util/log';
 import {validateToken} from '../api/notion';
 import { newGetTokenInteractor, GetTokenRepo } from '../usecase/getToken';
 import { GetTokenResponse } from './webext-bridge';
@@ -14,11 +15,18 @@ type MessageStatus =
   | 'unknown-error';
 
 const startGetTokenListener = (repo: GetTokenRepo): void => {
+  const log = createLog('background', 'GetTokenMessageListener')
+
+  log.info('Creating listener: Start')
   const interactor = newGetTokenInteractor(repo)
   
   onMessage('notion.getToken', async () => {
+    log.info('Calling getToken interactor: Start')
     const result = await interactor.getToken()
+    log.info('Calling getToken interactor: Finish')
+    
     if (!result.ok) {
+      log.error('Error result', result)
       return {
         status: result.errorType
       }
@@ -28,24 +36,31 @@ const startGetTokenListener = (repo: GetTokenRepo): void => {
       status: 'success' as const
     }
   });
+  
+  log.info('Creating listener: Finish')
 };
 
 const getToken = async (): Promise<GetTokenResponse> => {
+  const log = createLog('background', 'GetTokenMessageSender')
+
   try {
+    log.info('Sending message: Start')
     const value = await sendMessage(
       'notion.getToken',
       {},
       'background'
-    );
+      );
+    log.info('Sending message: Finish')
     return value;
   } catch {
+    log.info('Sending message: Error')
     return {
       status: 'messaging-error'
     };
   }
 }
 
-// TODO: Remove
+// TODO: Remove and add logging in new location
 const listen = (): void => {
   if (listened) {
     throw new Error('Already listening for Notion messages');
@@ -54,13 +69,14 @@ const listen = (): void => {
 
   onMessage('setup.validate-notion-integration-token', async ({data}) => {
     const result = await validateToken(data.token);
-
+    
     return result;
   });
 };
 
 type NotionMessageResult = MessageStatus | 'messaging-error';
 
+// TODO: Remove and add logging in new location
 const validateIntegrationToken = async (
   token: string
 ): Promise<NotionMessageResult> => {

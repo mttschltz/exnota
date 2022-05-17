@@ -14,11 +14,12 @@ interface GetTokenInteractor {
 const newGetTokenInteractor = (repo: GetTokenRepo): GetTokenInteractor => {
     const GetToken: GetTokenInteractor = {
         async getToken(): Promise<Result<string | undefined, UseCaseOptionsError>> {
-            log.info('Starting repo.getOptions')
+            log.info('Calling repo.getOptions: Start')
             const result = await repo.getOptions()
-            log.info('Finished repo.getOptions')
+            log.info('Calling repo.getOptions: Finish')
             
             if (!result.ok) {
+                log.info('Error result', result)
                 return result
             }
             return resultOk(result.value.notionIntegrationToken)

@@ -13,19 +13,16 @@ interface ApiResponse {
   result: ApiStatus;
 }
 
-const log = createLog('background', 'NotionAPI');
-
-
-
 // TODO: Do we need to pass the token here (or through messaging) or can we pull from options?
 const validateToken = async (token: string): Promise<ApiResponse> => {
+  const log = createLog('background', 'NotionAPIValidateToken');
   const notion = new Client({
     auth: token,
   });
   try {
     log.info('Testing token: Start');
     await notion.users.me({});
-    log.info('Testing token: Success');
+    log.info('Testing token: Finish');
 
     return {
       result: 'success',

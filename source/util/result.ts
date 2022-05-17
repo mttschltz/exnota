@@ -98,6 +98,18 @@ function resultError<T, E>(
   return new ResultErrorImpl<E>(message, errorType, error, metadata);
 }
 
+function isResult<T, E>(r: unknown): r is Result<T, E> {
+  if (typeof (r as Result<T,E>).ok !== 'boolean') {
+    return false
+  }
+  
+  if (isResultOk(r as Result<T,E>)) {
+    return (r as ResultOk<T>).value !== undefined
+  }
+
+  return (r as ResultError<E>).error !== undefined 
+}
+
 function isResultOk<T, E>(result: Result<T, E>): result is ResultOk<T> {
   return result.ok;
 }
@@ -174,6 +186,7 @@ export {
   resultsErrorResult,
   results,
   resultsOk,
+  isResult,
   isResultOk,
   isResultError,
 };

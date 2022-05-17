@@ -1,5 +1,7 @@
 import OptionsSync from 'webext-options-sync';
 
+// TODO: Remove file once repo fully set up
+
 const options = new OptionsSync({
   defaults: {
     notionIntegrationToken: '',

@@ -1,4 +1,5 @@
 import {
+  isResult,
     isResultError,
     isResultOk,
     Result,
@@ -283,6 +284,35 @@ import {
             expect(rs2.values).toEqual([])
           })
         })
+      })
+    })
+  })
+  describe('isResult', () => {
+    describe('Given an ok result', () => {
+      test('Then it returns true', () => {
+        const ok = resultOk('result')
+        expect(isResult(ok)).toBe(true)
+      })
+    })
+    describe('Given an error result', () => {
+      test('Then it returns true', () => {
+        const err = resultError<string, 'error'>('error', 'error')
+        expect(isResult(err)).toBe(true)
+      })
+    })
+    describe('Given a non-result object', () => {
+      test('Then it returns false', () => {
+        expect(isResult({})).toBe(false)
+        expect(isResult({hey: "hello"})).toBe(false)
+      })
+    })
+    describe('Given a primitive', () => {
+      test('Then it returns false', () => {
+        expect(isResult(undefined)).toBe(false)
+        expect(isResult(null)).toBe(false)
+        expect(isResult(1)).toBe(false)
+        expect(isResult('hi')).toBe(false)
+        expect(isResult(true)).toBe(false)
       })
     })
   })

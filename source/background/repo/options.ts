@@ -11,17 +11,17 @@ const newOptionsRepo = (optionsSync: OptionsSync): OptionsRepo => {
         getOptions: async (): Promise<Result<Options, "options-sync">> => {
             const log = createLog('background', 'GetOptionsRepo')
             try {
-                log.info('OptionsRepo: Starting optionsSync.getAll')
+                log.info('Calling optionsSync.getAll: Start')
                 const values = await optionsSync.getAll()
-                log.info('OptionsRepo: Finished optionsSync.getAll')
+                log.info('Calling optionsSync.getAll: Finish')
                 
                 return resultOk(newOptions(values.notionIntegrationToken))
             } catch (e) {
-                log.error('OptionsRepo: Could not get options from OptionsSync', unknownError(e))
+                log.error('Could not get options from OptionsSync', unknownError(e))
                 if (e instanceof Error) {
-                    return resultError('OptionsRepo: Could not get options from OptionsSync', 'options-sync', e)
+                    return resultError('Could not get options from OptionsSync', 'options-sync', e)
                 }
-                return resultError('OptionsRepo: Could not get options from OptionsSync', 'options-sync')
+                return resultError('Could not get options from OptionsSync', 'options-sync')
             }
         },
     }
