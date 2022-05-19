@@ -1,4 +1,3 @@
-
 module.exports = {
   "presets": [
     [
@@ -6,14 +5,13 @@ module.exports = {
       "@babel/preset-env",
       {
         "useBuiltIns": false,
-        // Do not transform modules to CJS
         "modules": "commonjs",
         "targets": {
           "chrome": "49",
           "firefox": "52",
           "opera": "36",
           "edge": "79"
-        }
+        },
       }
     ],
     "@babel/typescript",

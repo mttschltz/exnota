@@ -182,6 +182,22 @@ function resultsErrorResult<T, E>(err: ResultError<E>): Results<T, E> {
   return new ResultsImpl([err]);
 }
 
+function serializeResult<T,E>(r: Result<T, E>): Result<T,E> {
+  if (isResultOk(r)) {
+    return {
+      ok: r.ok,
+      value: r.value,
+    }
+  }
+  return {
+    ok: r.ok,
+    error: r.error,
+    errorType: r.errorType,
+    message: r.message,
+    metadata: r.metadata,
+  }
+}
+
 export type {Result, ResultError, ResultOk, Results, ResultMetadata};
 export {
   resultOk,
@@ -193,4 +209,5 @@ export {
   isResult,
   isResultOk,
   isResultError,
+  serializeResult,
 };

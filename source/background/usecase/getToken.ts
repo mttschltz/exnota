@@ -28,5 +28,5 @@ const newGetTokenInteractor = (repo: GetTokenRepo): GetTokenInteractor => {
     return GetToken
 }
 
-export type { UseCaseOptionsError, GetTokenRepo }
+export type { UseCaseOptionsError, GetTokenInteractor, GetTokenRepo }
 export { newGetTokenInteractor }

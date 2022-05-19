@@ -13,6 +13,7 @@ import {
     resultsError,
     resultsErrorResult,
     resultsOk,
+    serializeResult,
   } from './result'
   import { assertResultError, assertResultOk } from './testing' 
   
@@ -357,6 +358,29 @@ import {
       test('Then it returns false', () => {
         const ok = resultOk('result')
         expect(isResultError(ok)).toBe(false)
+      })
+    })
+  })
+  describe('serializeResult', () => {
+    describe('Given an error result', () => {
+      test('Then it returns a plain object with the same properties', () => {
+        const err = resultError<string, 'error-type'>('error', 'error-type', new Error('an error'), { meta: 'data'})
+        expect(serializeResult(err)).toMatchObject({
+          ok: false,
+          message: 'error',
+          errorType: 'error-type',
+          error: new Error('an error'),
+          metadata: {meta: 'data'},
+        })
+      })
+    })
+    describe('Given an ok result', () => {
+      test('Then it returns a plain object with the same properties', () => {
+        const ok = resultOk('result')
+        expect(serializeResult(ok)).toMatchObject({
+          ok: true,
+          value: 'result',
+        })
       })
     })
   })

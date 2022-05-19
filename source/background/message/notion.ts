@@ -1,5 +1,6 @@
 import {onMessage, sendMessage} from 'webext-bridge';
 import { createLog } from '../../util/log';
+import { resultError, serializeResult } from '../../util/result';
 import {validateToken} from '../api/notion';
 import { newGetTokenInteractor, GetTokenRepo } from '../usecase/getToken';
 import { GetTokenResponse } from './webext-bridge';
@@ -27,14 +28,9 @@ const startGetTokenListener = (repo: GetTokenRepo): void => {
     
     if (!result.ok) {
       log.error('Error result', result)
-      return {
-        status: result.errorType
-      }
+      return serializeResult(result)
     }
-    return {
-      token: result.value,
-      status: 'success' as const
-    }
+    return serializeResult(result)
   });
   
   log.info('Creating listener: Finish')
@@ -54,9 +50,7 @@ const getToken = async (): Promise<GetTokenResponse> => {
     return value;
   } catch {
     log.info('Sending message: Error')
-    return {
-      status: 'messaging-error'
-    };
+    return resultError('Error sending message', 'messaging-error');
   }
 }
 
