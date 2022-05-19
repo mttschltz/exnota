@@ -364,12 +364,18 @@ import {
   describe('serializeResult', () => {
     describe('Given an error result', () => {
       test('Then it returns a plain object with the same properties', () => {
-        const err = resultError<string, 'error-type'>('error', 'error-type', new Error('an error'), { meta: 'data'})
-        expect(serializeResult(err)).toMatchObject({
+        const err = new Error('an error', { cause: new Error('an error cause', { cause: new Error('an error cause cause') }) })
+        const result = resultError<string, 'error-type'>('error', 'error-type', err, { meta: 'data'})
+        expect(serializeResult(result)).toMatchObject({
           ok: false,
           message: 'error',
           errorType: 'error-type',
-          error: new Error('an error'),
+          error: {
+            name: 'Error',
+            message: 'an error',
+            // Error.cause seems unsupported at the moment, so can't be serialized
+            cause: undefined
+          } as Error,
           metadata: {meta: 'data'},
         })
       })

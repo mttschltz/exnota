@@ -182,6 +182,15 @@ function resultsErrorResult<T, E>(err: ResultError<E>): Results<T, E> {
   return new ResultsImpl([err]);
 }
 
+function serializeError(error: Error): Error {
+  return {
+    message: error.message,
+    name: error.name,
+    stack: error.stack,
+    cause: error.cause ? serializeError(error.cause) : undefined
+  }
+}
+
 function serializeResult<T,E>(r: Result<T, E>): Result<T,E> {
   if (isResultOk(r)) {
     return {
@@ -191,7 +200,7 @@ function serializeResult<T,E>(r: Result<T, E>): Result<T,E> {
   }
   return {
     ok: r.ok,
-    error: r.error,
+    error: serializeError(r.error),
     errorType: r.errorType,
     message: r.message,
     metadata: r.metadata,
