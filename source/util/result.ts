@@ -207,7 +207,21 @@ function serializeResult<T,E>(r: Result<T, E>): Result<T,E> {
   }
 }
 
-export type {Result, ResultError, ResultOk, Results, ResultMetadata};
+type ReturnResultError<T extends (...args: any) => any> = ReturnType<T> extends Result<any, infer X> ? X : never
+type AsyncReturnResultError<T extends (...args: any) => Promise<any>> = Awaited<ReturnType<T>> extends Result<any, infer X> ? X : never
+
+/**
+ * Get the error type of a function that returns a result, or a promise that returns a result. E.g.
+ * 
+ * () => Promise<Result<any, ErrorType>>
+ * 
+ * or
+ * 
+ * () => Result<any, ErrorType>
+ */
+type FunctionError<T extends (...args: any) => any> = ReturnType<T> extends Promise<any> ? AsyncReturnResultError<T> : ReturnResultError<T>
+
+export type {Result, ResultError, ResultOk, Results, ResultMetadata, FunctionError};
 export {
   resultOk,
   resultError,

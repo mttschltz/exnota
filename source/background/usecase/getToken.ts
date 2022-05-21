@@ -1,8 +1,8 @@
 import { createLog } from "../../util/log"
-import { Result, resultOk } from "../../util/result"
-import { GetRepoMethodError, OptionsRepo } from "../repo"
+import { FunctionError, Result, resultOk } from "../../util/result"
+import { OptionsRepo } from "../repo"
 
-type UseCaseOptionsError = GetRepoMethodError<OptionsRepo['getOptions']>
+type UseCaseOptionsError = FunctionError<OptionsRepo['getOptions']>
 
 type GetTokenRepo = Pick<OptionsRepo, 'getOptions'>
 

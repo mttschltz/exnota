@@ -1,12 +1,9 @@
 import { Options } from "./options"
-import { Result } from "../util/result"
-
-type GetResultError<Type> = Type extends Result<'', infer X> ? X : never
-type GetRepoMethodError<T extends () => any> = GetResultError<Awaited<ReturnType<T>>>
+import { FunctionError, Result } from "../util/result"
 
 interface OptionsRepo {
     readonly getOptions: () => Promise<Result<Options, 'options-sync'>> 
+    readonly setNotionIntegrationToken: (notionIntegrationToken: string) => Promise<Result<Options, 'options-sync' | FunctionError<Options['setNotionIntegrationToken']>>>
 }
 
-
-export type {OptionsRepo,GetRepoMethodError }
+export type {OptionsRepo}

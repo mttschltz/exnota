@@ -1,5 +1,12 @@
-type Options = {
+import { Result, resultError, resultOk } from "../util/result"
+
+type OptionsJson = {
   notionIntegrationToken: string
+}
+
+type Options = OptionsJson & {
+  setNotionIntegrationToken: (notionIntegrationToken: string) => Result<undefined, 'missing-token'>
+  asJson: () => OptionsJson
 }
 
 class OptionsImpl implements Options {
@@ -13,13 +20,25 @@ class OptionsImpl implements Options {
     return this._notionIntegrationToken
   }
 
-  // TODO: Add length requirement to setter for notionIntegrationToken
+  public setNotionIntegrationToken(notionIntegrationToken: string): Result<undefined, 'missing-token'> {
+    if (typeof notionIntegrationToken !== 'string' || notionIntegrationToken.length === 0) {
+      return resultError('Notion integration token missing', 'missing-token')
+    }
+    this._notionIntegrationToken = notionIntegrationToken
+    return resultOk(undefined)
+  }
+
+  public asJson(): OptionsJson {
+    return {
+      notionIntegrationToken: this._notionIntegrationToken
+    }
+  }
 }
 
 
-const newOptions = (notionIntegrationToken: string): Options => {
-  return new OptionsImpl(notionIntegrationToken)
+const newOptions = (json: OptionsJson): Options => {
+  return new OptionsImpl(json.notionIntegrationToken)
 }
 
-export type { Options }
+export type { Options, OptionsJson }
 export { newOptions }

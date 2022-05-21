@@ -2,7 +2,7 @@ import {ProtocolWithReturn} from 'webext-bridge';
 import {MessageStatus} from './notion';
 import type { GetTokenInteractor, UseCaseOptionsError } from '../usecase/getToken'
 import { Result } from '../../util/result'
-import type { GetRepoMethodError } from '../repo'
+import type { FunctionError } from '../../util/result'
 
 // TODO: Remove
 interface MessageResponse {
@@ -11,7 +11,7 @@ interface MessageResponse {
 
 type MessagingError = 'messaging-error'
 
-type GetTokenResponse = Result<string | undefined, GetRepoMethodError<GetTokenInteractor['getToken']> | MessagingError>
+type GetTokenResponse = Result<string | undefined, FunctionError<GetTokenInteractor['getToken']> | MessagingError>
 
 declare module 'webext-bridge' {
   export interface ProtocolMap {
