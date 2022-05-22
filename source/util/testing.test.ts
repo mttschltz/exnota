@@ -44,7 +44,7 @@ describe('testing', () => {
 })
 describe('jestFnThrows', () => {
   describe('Given an error message', () => {
-    test('Then it returns a mocked implementation that throws the messsage', () => {
+    test('Then it returns a mocked implementation that throws the message', () => {
       const mock = mockThrows('error msg')
       expect(mock).toThrow('error msg')
       expect(mock).toThrow('error msg')
