@@ -1,20 +1,13 @@
 import {APIErrorCode, Client, isNotionClientError} from '@notionhq/client';
-import {createLog, unknownError} from '../../util/log';
+import {createLog, isErrorish, unknownError} from '../../util/log';
+import {Result, resultError, resultOk} from '../../util/result';
+import {ValidateTokenApiError} from '../usecase/setToken';
 
-type ApiStatus =
-  | 'success'
-  | 'notion-invalid-token'
-  | 'notion-rate-limit-error'
-  | 'notion-request-error' // an error likely inside our control
-  | 'notion-other-error' // an error likely outside our control
-  | 'unknown-error';
+type ApiError = ValidateTokenApiError;
 
-interface ApiResponse {
-  result: ApiStatus;
-}
-
-// TODO: Do we need to pass the token here (or through messaging) or can we pull from options?
-const validateToken = async (token: string): Promise<ApiResponse> => {
+const validateToken = async (
+  token: string
+): Promise<Result<undefined, ApiError>> => {
   const log = createLog('background', 'NotionAPIValidateToken');
   const notion = new Client({
     auth: token,
@@ -24,31 +17,31 @@ const validateToken = async (token: string): Promise<ApiResponse> => {
     await notion.users.me({});
     log.info('Testing token: Finish');
 
-    return {
-      result: 'success',
-    };
+    return resultOk(undefined);
   } catch (e) {
     if (isNotionClientError(e)) {
       switch (e.code) {
         case APIErrorCode.Unauthorized:
           log.info('Testing token: Error (Notion invalid token)', {
             code: e.code,
-            messsage: e.message,
+            message: e.message,
             name: e.name,
           });
-          return {
-            result: 'notion-invalid-token',
-          };
+          return resultError(
+            'Notion validation: Invalid token',
+            'notion-invalid-token'
+          );
         // 429	"rate_limited"	This request exceeds the number of requests allowed. Slow down and try again. More details on rate limits
         case APIErrorCode.RateLimited:
           log.info('Testing token: Error (Notion rate limit error)', {
             code: e.code,
-            messsage: e.message,
+            message: e.message,
             name: e.name,
           });
-          return {
-            result: 'notion-rate-limit-error',
-          };
+          return resultError(
+            'Notion validation: Rate limit error',
+            'notion-rate-limit-error'
+          );
         /* eslint-disable no-fallthrough */
         // 400	"invalid_json"	The request body could not be decoded as JSON.
         case APIErrorCode.InvalidJSON:
@@ -67,31 +60,37 @@ const validateToken = async (token: string): Promise<ApiResponse> => {
         case APIErrorCode.ConflictError:
           log.error('Testing token: Error (Notion request error)', {
             code: e.code,
-            messsage: e.message,
+            message: e.message,
             name: e.name,
           });
-          return {
-            result: 'notion-request-error',
-          };
+          return resultError(
+            `Notion validation: Request error; ${e.name}; ${e.message} (${e.code})`,
+            'notion-request-error'
+          );
         /* eslint-enable no-fallthrough */
         default:
           log.error('Testing token: Error (Notion other error)', {
             code: e.code,
-            messsage: e.message,
+            message: e.message,
             name: e.name,
           });
-          return {
-            result: 'notion-other-error',
-          };
+          return resultError(
+            'Notion validation: Other error',
+            'notion-other-error'
+          );
       }
     } else {
       log.error('Testing token: Error (unknown error)', unknownError(e));
-      return {
-        result: 'unknown-error',
-      };
+      if (isErrorish(e)) {
+        return resultError(
+          `Other validation error: ${e.name}; ${e.message}`,
+          'unknown-error'
+        );
+      }
+      return resultError(`Other validation error`, 'unknown-error');
     }
   }
 };
 
-export type {ApiStatus};
+export type {ApiError};
 export {validateToken};

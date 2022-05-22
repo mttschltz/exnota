@@ -1,33 +1,60 @@
-import { createLog } from "../../util/log"
-import { FunctionError, Result, resultOk } from "../../util/result"
-import { Options } from "../options"
-import { OptionsRepo } from "../repo"
+import {createLog} from '../../util/log';
+import {FunctionError, Result, resultOk} from '../../util/result';
+import {Options} from '../options';
+import {OptionsRepo} from '../repo';
 
-type SetTokenError = FunctionError<OptionsRepo['setNotionIntegrationToken']>
+type ValidateTokenApiError =
+  | 'notion-invalid-token'
+  | 'notion-rate-limit-error'
+  | 'notion-request-error' // an error likely inside our control
+  | 'notion-other-error' // an error likely outside our control
+  | 'unknown-error';
 
-type SetTokenRepo = Pick<OptionsRepo, 'setNotionIntegrationToken'>
+type ValidateToken = (
+  token: string
+) => Promise<Result<undefined, ValidateTokenApiError>>;
 
-const log = createLog('background', 'SetTokenUsecase')
+type SetTokenError =
+  | FunctionError<OptionsRepo['setNotionIntegrationToken']>
+  | ValidateTokenApiError;
+
+type SetTokenRepo = Pick<OptionsRepo, 'setNotionIntegrationToken'>;
+
+const log = createLog('background', 'SetTokenUsecase');
 interface SetTokenInteractor {
-    readonly setToken: (token: string) => Promise<Result<Options, SetTokenError>>
+  readonly setToken: (token: string) => Promise<Result<Options, SetTokenError>>;
 }
 
-const newSetTokenInteractor = (repo: SetTokenRepo): SetTokenInteractor => {
-    const SetToken: SetTokenInteractor = {
-        async setToken(token): Promise<Result<Options, SetTokenError>> {
-            log.info('Calling repo.setNotionIntegrationToken: Start')
-            const result = await repo.setNotionIntegrationToken(token)
-            log.info('Calling repo.setNotionIntegrationToken: Finish')
-            
-            if (!result.ok) {
-                log.info('Error result', result)
-                return result
-            }
-            return resultOk(result.value)
-        }
-    }
-    return SetToken
-}
+const newSetTokenInteractor = (
+  repo: SetTokenRepo,
+  validate: ValidateToken
+): SetTokenInteractor => {
+  const SetToken: SetTokenInteractor = {
+    async setToken(token): Promise<Result<Options, SetTokenError>> {
+      const validateResult = await validate(token);
+      if (!validateResult.ok) {
+        return validateResult;
+      }
 
-export type { SetTokenError, SetTokenInteractor, SetTokenRepo }
-export { newSetTokenInteractor }
+      log.info('Calling repo.setNotionIntegrationToken: Start');
+      const result = await repo.setNotionIntegrationToken(token);
+      log.info('Calling repo.setNotionIntegrationToken: Finish');
+
+      if (!result.ok) {
+        log.info('Error result', result);
+        return result;
+      }
+      return resultOk(result.value);
+    },
+  };
+  return SetToken;
+};
+
+export type {
+  SetTokenError,
+  SetTokenInteractor,
+  SetTokenRepo,
+  ValidateToken,
+  ValidateTokenApiError,
+};
+export {newSetTokenInteractor};
