@@ -23,7 +23,7 @@ class ResultOkImpl<T> implements ResultOk<T> {
 
 interface ResultError<E> {
   readonly ok: false;
-  readonly errorType: E
+  readonly errorType: E;
   readonly error: Error;
   readonly message: string;
   readonly metadata: ResultMetadata;
@@ -57,7 +57,7 @@ class ResultErrorImpl<E> implements ResultError<E> {
     metadata: ResultMetadata = {}
   ) {
     this._message = message;
-    this._errorType = errorType
+    this._errorType = errorType;
     this._error = error ?? new Error('Result error');
     this._metadata = metadata;
   }
@@ -100,18 +100,18 @@ function resultError<T, E extends string>(
 
 function isResult<T, E>(r: unknown): r is Result<T, E> {
   if (!r) {
-    return false
-  }
-  
-  if (typeof (r as Result<T,E>).ok !== 'boolean') {
-    return false
-  }
-  
-  if (isResultOk(r as Result<T,E>)) {
-    return (r as ResultOk<T>).value !== undefined
+    return false;
   }
 
-  return (r as ResultError<E>).error !== undefined 
+  if (typeof (r as Result<T, E>).ok !== 'boolean') {
+    return false;
+  }
+
+  if (isResultOk(r as Result<T, E>)) {
+    return (r as ResultOk<T>).value !== undefined;
+  }
+
+  return (r as ResultError<E>).error !== undefined;
 }
 
 function isResultOk<T, E>(result: Result<T, E>): result is ResultOk<T> {
@@ -187,16 +187,16 @@ function serializeError(error: Error): Error {
     message: error.message,
     name: error.name,
     stack: error.stack,
-    cause: error.cause ? serializeError(error.cause) : undefined
-  }
+    cause: error.cause ? serializeError(error.cause) : undefined,
+  };
 }
 
-function serializeResult<T,E>(r: Result<T, E>): Result<T,E> {
+function serializeResult<T, E>(r: Result<T, E>): Result<T, E> {
   if (isResultOk(r)) {
     return {
       ok: r.ok,
       value: r.value,
-    }
+    };
   }
   return {
     ok: r.ok,
@@ -204,24 +204,39 @@ function serializeResult<T,E>(r: Result<T, E>): Result<T,E> {
     errorType: r.errorType,
     message: r.message,
     metadata: r.metadata,
-  }
+  };
 }
 
-type ReturnResultError<T extends (...args: any) => any> = ReturnType<T> extends Result<any, infer X> ? X : never
-type AsyncReturnResultError<T extends (...args: any) => Promise<any>> = Awaited<ReturnType<T>> extends Result<any, infer X> ? X : never
+type ReturnResultError<T extends (...args: any) => any> =
+  ReturnType<T> extends Result<any, infer X> ? X : never;
+type AsyncReturnResultError<T extends (...args: any) => Promise<any>> = Awaited<
+  ReturnType<T>
+> extends Result<any, infer X>
+  ? X
+  : never;
 
 /**
  * Get the error type of a function that returns a result, or a promise that returns a result. E.g.
- * 
+ *
  * () => Promise<Result<any, ErrorType>>
- * 
+ *
  * or
- * 
+ *
  * () => Result<any, ErrorType>
  */
-type FunctionError<T extends (...args: any) => any> = ReturnType<T> extends Promise<any> ? AsyncReturnResultError<T> : ReturnResultError<T>
+type FunctionError<T extends (...args: any) => any> =
+  ReturnType<T> extends Promise<any>
+    ? AsyncReturnResultError<T>
+    : ReturnResultError<T>;
 
-export type {Result, ResultError, ResultOk, Results, ResultMetadata, FunctionError};
+export type {
+  Result,
+  ResultError,
+  ResultOk,
+  Results,
+  ResultMetadata,
+  FunctionError,
+};
 export {
   resultOk,
   resultError,

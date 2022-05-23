@@ -1,7 +1,6 @@
 import {browser} from 'webextension-polyfill-ts';
 import OptionsSync from 'webext-options-sync';
 import {startGetTokenListener, startSetTokenListener} from './message/notion';
-import {options} from '../util/options';
 import {translate} from '../util/i18n';
 import {newOptionsRepo} from './repo/options';
 import {createLog} from '../util/log';
@@ -37,5 +36,3 @@ startGetTokenListener(optionsRepo);
 
 log.info('Starting set token listener');
 startSetTokenListener(optionsRepo);
-
-export {options};
