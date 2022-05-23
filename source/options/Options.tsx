@@ -175,7 +175,7 @@ const Options: React.FC = () => {
               </Heading>
             </Box>
           </Header>
-          {!token.loading && <Spinner />}
+          {token.loading && <Spinner />}
           {!token.loading && (
             <Box direction="column">
               <Box>
