@@ -32,6 +32,7 @@
     "@use-it/event-listener": "0.1.7",
     "advanced-css-reset": "^1.2.2",
     "grommet": "^2.23.0",
+    "grommet-icons": "4.7.0",
     "grommet-styles": "^0.2.0",
     "grommet-theme-hpe": "^3.0.1",
     "i18next": "21.6.16",

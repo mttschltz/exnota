@@ -67,9 +67,9 @@ const setToken = async (token: string): Promise<SetTokenResponse> => {
 
   try {
     log.info('Sending message: Start');
-    const value = await sendMessage('notion.setToken', {token}, 'background');
+    const result = await sendMessage('notion.setToken', {token}, 'background');
     log.info('Sending message: Finish');
-    return value;
+    return result;
   } catch {
     log.info('Sending message: Error');
     return resultError('Error sending message', 'messaging-error');

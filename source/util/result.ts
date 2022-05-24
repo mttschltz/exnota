@@ -207,6 +207,7 @@ function serializeResult<T, E>(r: Result<T, E>): Result<T, E> {
   };
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 type ReturnResultError<T extends (...args: any) => any> =
   ReturnType<T> extends Result<any, infer X> ? X : never;
 type AsyncReturnResultError<T extends (...args: any) => Promise<any>> = Awaited<
@@ -228,6 +229,7 @@ type FunctionError<T extends (...args: any) => any> =
   ReturnType<T> extends Promise<any>
     ? AsyncReturnResultError<T>
     : ReturnResultError<T>;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export type {
   Result,

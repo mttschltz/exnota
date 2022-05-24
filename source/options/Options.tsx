@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {StatusGood, StatusPlaceholder} from 'grommet-icons';
 import {
   Anchor,
   Grommet,
@@ -13,13 +14,14 @@ import {
   Paragraph,
   FormField,
   Form,
+  Button,
 } from 'grommet';
 import {browser} from 'webextension-polyfill-ts';
 import {FunctionComponent, useCallback, useEffect, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
 import {Translate, useTranslate} from '../util/i18n';
 import {getToken, setToken} from '../background/message/notion';
-import {FunctionError} from '../util/result';
+import {FunctionError, ResultError} from '../util/result';
 
 const Spinner: FunctionComponent = () => {
   return (
@@ -102,57 +104,129 @@ const InstructionsStep: React.FC = ({children}) => {
   );
 };
 
-interface UseToken {
+interface GetToken {
   readonly loading: boolean;
   readonly token: string | undefined;
-  readonly fetchedTokenError: FunctionError<typeof getToken> | null;
-  readonly setToken: (token: string) => void;
-  readonly setTokenError: FunctionError<typeof setToken> | null;
+  readonly getTokenError: ResultError<FunctionError<typeof getToken>> | null;
 }
 
-const useToken = (): UseToken => {
+const useGetToken = (): GetToken => {
   const [loading, setLoading] = useState(true);
   const [fetchedToken, setFetchedToken] =
     useState<string | undefined>(undefined);
-  const [fetchedTokenError, setFetchedTokenError] =
-    useState<UseToken['fetchedTokenError']>(null);
-  const [setTokenError, setSetTokenError] =
-    useState<UseToken['setTokenError']>(null);
+  const [getTokenError, setGetTokenError] =
+    useState<GetToken['getTokenError']>(null);
 
   useEffect(() => {
-    const fetchToken = async (): Promise<void> => {
-      const t = await getToken();
+    const getTokenAsync = async (): Promise<void> => {
+      const result = await getToken();
 
-      setLoading(false);
-      if (!t.ok) {
-        setFetchedTokenError(t.errorType);
+      if (!result.ok) {
+        setGetTokenError(result);
       } else {
-        setFetchedToken(t.value);
+        setFetchedToken(result.value);
       }
+      setLoading(false);
     };
-    fetchToken();
+    getTokenAsync();
   }, []);
-
-  const setTokenCallback: UseToken['setToken'] = useCallback(
-    (token: string) => {
-      // TODO:
-    },
-    []
-  );
 
   return {
     loading,
     token: fetchedToken,
-    fetchedTokenError,
-    setToken: setTokenCallback,
-    setTokenError,
+    getTokenError,
   };
+};
+
+const TokenForm: React.FC<{token: string | undefined}> = ({
+  token: initialFormToken,
+}) => {
+  const t = useTranslate(['setup']);
+
+  const [formToken, setFormToken] = useState(initialFormToken);
+
+  const [setTokenError, setSetTokenError] =
+    useState<ResultError<FunctionError<typeof setToken>> | null>(null);
+  const [showEmptyTokenError, setEmptyMissingTokenError] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [valid, setValid] = useState(false);
+
+  const onSubmit = useCallback(() => {
+    const setTokenAsync = async (): Promise<void> => {
+      if (!formToken) {
+        setEmptyMissingTokenError(true);
+        return;
+      }
+      setSaving(true);
+      const result = await setToken(formToken);
+      setSaving(false);
+
+      if (!result.ok) {
+        setSetTokenError(result);
+      } else {
+        setValid(true);
+      }
+    };
+    setTokenAsync();
+  }, [formToken]);
+
+  const onChange: React.ChangeEventHandler<HTMLInputElement> = (e): void => {
+    setValid(false);
+    setFormToken(e.currentTarget.value);
+  };
+
+  return (
+    <Form onSubmit={onSubmit}>
+      <Box direction="row">
+        <FormField label={t('setup:token.label')} width="medium">
+          <TextInput
+            id="notionIntegrationToken"
+            name="notionIntegrationToken"
+            value={formToken}
+            onChange={onChange}
+          />
+        </FormField>
+        <Box alignSelf="end" pad={{left: 'small'}}>
+          <Box
+            direction="row"
+            align="center"
+            gap="small"
+            margin={{bottom: '0.4rem'}}
+          >
+            {!valid && <StatusPlaceholder color="transparent" />}
+            {valid && <StatusGood />}
+            <Button
+              type="submit"
+              disabled={saving || valid}
+              primary
+              label={t('setup:token.save_and_test')}
+            />
+          </Box>
+        </Box>
+      </Box>
+
+      {showEmptyTokenError && (
+        <Text color="status-critical">{t('setup:token.error_empty')}</Text>
+      )}
+      {setTokenError?.errorType === 'notion-invalid-token' && (
+        <Text color="status-critical">{t('setup:token.error_invalid')}</Text>
+      )}
+      {setTokenError?.errorType &&
+        setTokenError?.errorType !== 'notion-invalid-token' && (
+          <Text color="status-critical">
+            {t('setup:token.error_summary', {
+              code: setTokenError.errorType,
+              description: setTokenError.message,
+            })}
+          </Text>
+        )}
+    </Form>
+  );
 };
 
 const Options: React.FC = () => {
   const t = useTranslate(['setup']);
-  const [showTokenError] = useState(false);
-  const token = useToken();
+  const token = useGetToken();
 
   return (
     <Grommet theme={hpe}>
@@ -176,23 +250,21 @@ const Options: React.FC = () => {
             </Box>
           </Header>
           {token.loading && <Spinner />}
-          {!token.loading && (
+          {!token.loading && token.getTokenError && (
+            <Box>
+              <Paragraph>{t('setup:loading.error')}</Paragraph>
+              <Paragraph size="small">
+                {t('setup:loading.error_summary', {
+                  code: token.getTokenError.errorType,
+                  description: token.getTokenError.message,
+                })}
+              </Paragraph>
+            </Box>
+          )}
+          {!token.loading && !token.getTokenError && (
             <Box direction="column">
               <Box>
-                <Form>
-                  <FormField label={t('setup:connect.integrationTokenLabel')}>
-                    <TextInput
-                      id="notionIntegrationToken"
-                      name="notionIntegrationToken"
-                      value={token.token}
-                    />
-                  </FormField>
-                  {showTokenError && (
-                    <Text color="status-critical">
-                      {t('setup:connect.integrationTokenMissing')}
-                    </Text>
-                  )}
-                </Form>
+                <TokenForm token={token.token} />
               </Box>
               <Box>
                 <Box>
