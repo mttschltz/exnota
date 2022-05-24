@@ -33,30 +33,58 @@ const newOptionsRepo = (optionsSync: OptionsSync): OptionsRepo => {
   };
   const setNotionIntegrationToken: OptionsRepo['setNotionIntegrationToken'] =
     async (notionIntegrationToken: string) => {
+      const log = createLog('background', 'SetNotionIntegrationTokenRepo');
       let values: OptionsJson;
       try {
         values = await optionsSync.getAll();
       } catch (e) {
-        return resultError('Could not get options', 'options-sync');
+        log.error('Could not get options from OptionsSync', unknownError(e));
+        if (e instanceof Error) {
+          return resultError(
+            'Could not get options from OptionsSync',
+            'options-sync',
+            e
+          );
+        }
+        return resultError(
+          'Could not get options from OptionsSync',
+          'options-sync'
+        );
       }
 
       try {
+        log.info('Creating options: Start');
         const options = newOptions(values);
         const result = options.setNotionIntegrationToken(
           notionIntegrationToken
         );
+        log.info('Creating options: Finish');
 
         if (!result.ok) {
+          log.info('Creating options: Error');
           return result;
         }
 
+        log.info('Setting integration token in options: Start');
         await optionsSync.set({
           notionIntegrationToken,
         });
+        log.info('Setting integration token in options: Finish');
 
         return resultOk(options);
       } catch (e) {
-        return resultError('Could not set options', 'options-sync');
+        log.info('Setting integration token in options: Error');
+        if (e instanceof Error) {
+          return resultError(
+            'Could not set notion integration toke',
+            'options-sync',
+            e
+          );
+        }
+        return resultError(
+          'Could not set notion integration toke',
+          'options-sync'
+        );
       }
     };
 
