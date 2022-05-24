@@ -62,18 +62,20 @@ const Spinner: FunctionComponent = () => {
 const ErrorWithDetails: React.FC<{
   message: string;
   code: string;
-  description: string;
-}> = ({message, code, description}) => {
+  customMessage?: string;
+}> = ({message, code, customMessage}) => {
   const t = useTranslate(['setup']);
   return (
     <Box>
-      <Paragraph margin="none" color="status-critical">
-        {message}
-      </Paragraph>
+      {customMessage && (
+        <Paragraph margin="none" color="status-critical">
+          {customMessage}
+        </Paragraph>
+      )}
       <Paragraph margin="none" color="status-critical" size="small">
         {t('setup:error_summary', {
           code,
-          description,
+          message,
         })}
       </Paragraph>
     </Box>
@@ -234,12 +236,10 @@ const TokenForm: React.FC<{token: string | undefined}> = ({
       )}
       {setTokenError?.errorType &&
         setTokenError?.errorType !== 'notion-invalid-token' && (
-          <Text color="status-critical">
-            {t('setup:token.error_summary', {
-              code: setTokenError.errorType,
-              description: setTokenError.message,
-            })}
-          </Text>
+          <ErrorWithDetails
+            code={setTokenError.errorType}
+            message={setTokenError.message}
+          />
         )}
     </Form>
   );
@@ -273,9 +273,9 @@ const Options: React.FC = () => {
           {token.loading && <Spinner />}
           {!token.loading && token.getTokenError && (
             <ErrorWithDetails
+              customMessage={t('setup:loading.error')}
+              message={token.getTokenError.message}
               code={token.getTokenError.errorType}
-              description={token.getTokenError.message}
-              message={t('setup:loading.error')}
             />
           )}
           {!token.loading && !token.getTokenError && (
