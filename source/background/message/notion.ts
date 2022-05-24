@@ -37,7 +37,10 @@ const getToken = async (): Promise<GetTokenResponse> => {
     return value;
   } catch {
     log.info('Sending message: Error');
-    return resultError('Error sending message', 'messaging-error');
+    return resultError(
+      'Error sending message via GetTokenMessageSender',
+      'messaging-error'
+    );
   }
 };
 
@@ -72,7 +75,10 @@ const setToken = async (token: string): Promise<SetTokenResponse> => {
     return result;
   } catch {
     log.info('Sending message: Error');
-    return resultError('Error sending message', 'messaging-error');
+    return resultError(
+      'Error sending message via SetTokenMessageSender',
+      'messaging-error'
+    );
   }
 };
 

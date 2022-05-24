@@ -59,6 +59,27 @@ const Spinner: FunctionComponent = () => {
   );
 };
 
+const ErrorWithDetails: React.FC<{
+  message: string;
+  code: string;
+  description: string;
+}> = ({message, code, description}) => {
+  const t = useTranslate(['setup']);
+  return (
+    <Box>
+      <Paragraph margin="none" color="status-critical">
+        {message}
+      </Paragraph>
+      <Paragraph margin="none" color="status-critical" size="small">
+        {t('setup:error_summary', {
+          code,
+          description,
+        })}
+      </Paragraph>
+    </Box>
+  );
+};
+
 const InstructionsHeading: React.FC = ({children}) => {
   return (
     <Heading level={3} size="5" margin={{bottom: 'small'}}>
@@ -251,15 +272,11 @@ const Options: React.FC = () => {
           </Header>
           {token.loading && <Spinner />}
           {!token.loading && token.getTokenError && (
-            <Box>
-              <Paragraph>{t('setup:loading.error')}</Paragraph>
-              <Paragraph size="small">
-                {t('setup:loading.error_summary', {
-                  code: token.getTokenError.errorType,
-                  description: token.getTokenError.message,
-                })}
-              </Paragraph>
-            </Box>
+            <ErrorWithDetails
+              code={token.getTokenError.errorType}
+              description={token.getTokenError.message}
+              message={t('setup:loading.error')}
+            />
           )}
           {!token.loading && !token.getTokenError && (
             <Box direction="column">
