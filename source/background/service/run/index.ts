@@ -1,11 +1,9 @@
 import {browser} from 'webextension-polyfill-ts';
 import OptionsSync from 'webext-options-sync';
-import {startGetTokenListener, startSetTokenListener} from './service/api/notion';
-import {translate} from '../util/i18n';
-import {newOptionsRepo} from './repo/options';
-import {createLog} from '../util/log';
-
-// TODO: Move this file into source/background/service?
+import {startGetTokenListener, startSetTokenListener} from '../api/notion';
+import {translate} from '../../../util/i18n';
+import {newOptionsRepo} from '../../repo/options';
+import {createLog} from '../../../util/log';
 
 const log = createLog('background', 'Index');
 
