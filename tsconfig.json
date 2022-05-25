@@ -15,9 +15,13 @@
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
+		"baseUrl": "./source",
+		"paths": {
+			"@lib/*": ["lib/*"]
+		},
 	},
 	"include": [
 		"source",
 		"webpack.config.js"
-	]
+	],
 }

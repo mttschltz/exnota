@@ -13,6 +13,7 @@
 	"rules": {
 		"no-console": "off",
 		"no-undef": "off",
+		"import/no-unresolved": "off",
 		"no-extend-native": "off",
 		"react/jsx-props-no-spreading": "off",
 		"jsx-a11y/label-has-associated-control": "off",

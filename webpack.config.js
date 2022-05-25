@@ -10,10 +10,11 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const WextManifestWebpackPlugin = require('wext-manifest-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const sourcePath = path.join(__dirname, 'source');
-const backgroundPath = path.join(sourcePath, 'background')
-const contentPath = path.join(sourcePath, 'content')
+const backgroundPath = path.join(sourcePath, 'background');
+const contentPath = path.join(sourcePath, 'content');
 const destPath = path.join(__dirname, 'extension');
 const nodeEnv = process.env.NODE_ENV || 'development';
 const targetBrowser = process.env.TARGET_BROWSER;
@@ -72,6 +73,11 @@ module.exports = {
   },
 
   resolve: {
+    plugins: [
+      new TsconfigPathsPlugin({
+        /* options: see below */
+      }),
+    ],
     extensions: ['.ts', '.tsx', '.js', '.json'],
     alias: {
       'webextension-polyfill-ts': path.resolve(
@@ -101,44 +107,50 @@ module.exports = {
           options: {
             // babel config here rather than .babelrc so Jest, which needs modules transformed to
             // commonjs, does not use it in preference to babel-jest.config.js
-            "presets": [
+            presets: [
               [
                 // Latest stable ECMAScript features
-                "@babel/preset-env",
+                '@babel/preset-env',
                 {
-                  "useBuiltIns": false,
+                  useBuiltIns: false,
                   // Do not transform modules to CJS
-                  "modules": false,
-                  "targets": {
-                    "chrome": "49",
-                    "firefox": "52",
-                    "opera": "36",
-                    "edge": "79"
-                  }
-                }
+                  modules: false,
+                  targets: {
+                    chrome: '49',
+                    firefox: '52',
+                    opera: '36',
+                    edge: '79',
+                  },
+                },
               ],
-              "@babel/typescript",
-              "@babel/react"
+              '@babel/typescript',
+              '@babel/react',
             ],
-            "plugins": [
-              ["@babel/plugin-proposal-class-properties"],
-              ["@babel/plugin-transform-destructuring", {
-                "useBuiltIns": true
-              }],
-              ["@babel/plugin-proposal-object-rest-spread", {
-                "useBuiltIns": true
-              }],
+            plugins: [
+              ['@babel/plugin-proposal-class-properties'],
+              [
+                '@babel/plugin-transform-destructuring',
+                {
+                  useBuiltIns: true,
+                },
+              ],
+              [
+                '@babel/plugin-proposal-object-rest-spread',
+                {
+                  useBuiltIns: true,
+                },
+              ],
               [
                 // Polyfills the runtime needed for async/await and generators
-                "@babel/plugin-transform-runtime",
+                '@babel/plugin-transform-runtime',
                 {
-                  "helpers": false,
-                  "regenerator": true
-                }
-              ]
-            ]
-          }
-        }
+                  helpers: false,
+                  regenerator: true,
+                },
+              ],
+            ],
+          },
+        },
       },
       {
         test: /\.(sa|sc|c)ss$/,
