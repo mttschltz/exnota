@@ -1,5 +1,5 @@
 import {Options} from './options';
-import {FunctionError, Result} from '../util/result';
+import {FunctionError, Result} from '../lib/result';
 
 interface OptionsRepo {
   readonly getOptions: () => Promise<Result<Options, 'options-sync'>>;

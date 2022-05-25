@@ -19,9 +19,9 @@ import {
 import {browser} from 'webextension-polyfill-ts';
 import {FunctionComponent, useCallback, useEffect, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
-import {Translate, useTranslate} from '../../../util/i18n';
+import {Translate, useTranslate} from '../../../lib/i18n';
 import {getToken, setToken} from '../../service/api/notion';
-import {FunctionError, ResultError} from '../../../util/result';
+import {FunctionError, ResultError} from '../../../lib/result';
 
 const Spinner: FunctionComponent = () => {
   return (

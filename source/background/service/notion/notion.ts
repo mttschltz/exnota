@@ -1,6 +1,6 @@
 import {APIErrorCode, Client, isNotionClientError} from '@notionhq/client';
-import {createLog, isErrorish, unknownError} from '../../../util/log';
-import {Result, resultError, resultOk} from '../../../util/result';
+import {createLog, isErrorish, unknownError} from '../../../lib/log';
+import {Result, resultError, resultOk} from '../../../lib/result';
 import {ValidateTokenApiError} from '../../usecase/setToken';
 
 type ApiError = ValidateTokenApiError;

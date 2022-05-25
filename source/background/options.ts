@@ -1,4 +1,4 @@
-import {Result, resultError, resultOk} from '../util/result';
+import {Result, resultError, resultOk} from '../lib/result';
 
 type OptionsJson = {
   notionIntegrationToken: string;
