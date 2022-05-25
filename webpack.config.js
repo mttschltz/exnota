@@ -61,8 +61,8 @@ module.exports = {
     manifest: path.join(sourcePath, 'manifest.json'),
     background: path.join(sourcePath, 'background', 'index.ts'),
     contentScript: path.join(sourcePath, 'content', 'index.ts'),
-    popup: path.join(sourcePath, 'popup', 'index.tsx'),
-    options: path.join(sourcePath, 'options', 'index.tsx'),
+    popup: path.join(sourcePath, 'ui', 'popup', 'index.tsx'),
+    options: path.join(sourcePath, 'ui', 'options', 'index.tsx'),
   },
 
   output: {
