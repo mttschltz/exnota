@@ -170,17 +170,18 @@ const TokenForm: React.FC<{token: string | undefined}> = ({
 
   const [setTokenError, setSetTokenError] =
     useState<ResultError<FunctionError<typeof setToken>> | null>(null);
-  const [showEmptyTokenError, setEmptyMissingTokenError] = useState(false);
+  const [showEmptyTokenError, setEmptyTokenError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [valid, setValid] = useState(false);
 
   const onSubmit = useCallback(() => {
     const setTokenAsync = async (): Promise<void> => {
       if (!formToken) {
-        setEmptyMissingTokenError(true);
+        setEmptyTokenError(true);
         return;
       }
       setSaving(true);
+      setSetTokenError(null);
       const result = await setToken(formToken);
       setSaving(false);
 
@@ -196,6 +197,10 @@ const TokenForm: React.FC<{token: string | undefined}> = ({
   const onChange: React.ChangeEventHandler<HTMLInputElement> = (e): void => {
     setValid(false);
     setFormToken(e.currentTarget.value);
+
+    if (e.currentTarget.value.length > 0) {
+      setEmptyTokenError(false);
+    }
   };
 
   return (
