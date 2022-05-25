@@ -1,9 +1,9 @@
 import WebExtOptionsSync from 'webext-options-sync';
 import {createLog, unknownError} from '@lib/log';
 import {resultError, resultOk} from '@lib/result';
-import type {OptionsJson} from '../options';
-import {newOptions} from '../options';
-import {OptionsRepo} from '../repo';
+import type {OptionsJson} from '@background/options';
+import {newOptions} from '@background/options';
+import {OptionsRepo} from '@background/repo';
 
 type OptionsSync = WebExtOptionsSync<OptionsJson>;
 

@@ -1,5 +1,5 @@
-import type {GetTokenInteractor} from '../../usecase/getToken';
-import type {SetTokenInteractor} from '../../usecase/setToken';
+import type {GetTokenInteractor} from '@background/usecase/getToken';
+import type {SetTokenInteractor} from '@background/usecase/setToken';
 import {Result} from '@lib/result';
 import type {FunctionError} from '@lib/result';
 

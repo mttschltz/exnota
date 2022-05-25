@@ -1,6 +1,6 @@
 import {createLog} from '@lib/log';
 import {FunctionError, Result, resultOk} from '@lib/result';
-import {OptionsRepo} from '../repo';
+import {OptionsRepo} from '@background/repo';
 
 type GetTokenError = FunctionError<OptionsRepo['getOptions']>;
 

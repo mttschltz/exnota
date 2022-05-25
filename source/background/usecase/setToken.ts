@@ -1,7 +1,7 @@
 import {createLog} from '@lib/log';
 import {FunctionError, Result, resultOk} from '@lib/result';
-import {Options} from '../options';
-import {OptionsRepo} from '../repo';
+import {Options} from '@background/options';
+import {OptionsRepo} from '@background/repo';
 
 type ValidateTokenApiError =
   | 'notion-invalid-token'
