@@ -11,8 +11,9 @@ const WextManifestWebpackPlugin = require('wext-manifest-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
-const viewsPath = path.join(__dirname, 'views');
 const sourcePath = path.join(__dirname, 'source');
+const backgroundPath = path.join(sourcePath, 'background')
+const contentPath = path.join(sourcePath, 'content')
 const destPath = path.join(__dirname, 'extension');
 const nodeEnv = process.env.NODE_ENV || 'development';
 const targetBrowser = process.env.TARGET_BROWSER;
@@ -59,10 +60,10 @@ module.exports = {
 
   entry: {
     manifest: path.join(sourcePath, 'manifest.json'),
-    background: path.join(sourcePath, 'background', 'index.ts'),
-    contentScript: path.join(sourcePath, 'content', 'index.ts'),
-    popup: path.join(sourcePath, 'ui', 'popup', 'index.tsx'),
-    options: path.join(sourcePath, 'ui', 'options', 'index.tsx'),
+    background: path.join(backgroundPath, 'index.ts'),
+    contentScript: path.join(contentPath, 'index.ts'),
+    popup: path.join(backgroundPath, 'ui', 'popup', 'index.tsx'),
+    options: path.join(backgroundPath, 'ui', 'options', 'index.tsx'),
   },
 
   output: {
@@ -194,14 +195,14 @@ module.exports = {
       verbose: true,
     }),
     new HtmlWebpackPlugin({
-      template: path.join(viewsPath, 'popup.html'),
+      template: path.join(backgroundPath, 'ui', 'views', 'popup.html'),
       inject: 'body',
       chunks: ['popup'],
       hash: true,
       filename: 'popup.html',
     }),
     new HtmlWebpackPlugin({
-      template: path.join(viewsPath, 'options.html'),
+      template: path.join(backgroundPath, 'ui', 'views', 'options.html'),
       inject: 'body',
       chunks: ['options'],
       hash: true,
