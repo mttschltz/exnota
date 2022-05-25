@@ -1,6 +1,6 @@
 import WebExtOptionsSync from 'webext-options-sync';
-import {createLog, unknownError} from '../../lib/log';
-import {resultError, resultOk} from '../../lib/result';
+import {createLog, unknownError} from '@lib/log';
+import {resultError, resultOk} from '@lib/result';
 import type {OptionsJson} from '../options';
 import {newOptions} from '../options';
 import {OptionsRepo} from '../repo';

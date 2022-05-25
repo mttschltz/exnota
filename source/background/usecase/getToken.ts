@@ -1,5 +1,5 @@
-import {createLog} from '../../lib/log';
-import {FunctionError, Result, resultOk} from '../../lib/result';
+import {createLog} from '@lib/log';
+import {FunctionError, Result, resultOk} from '@lib/result';
 import {OptionsRepo} from '../repo';
 
 type GetTokenError = FunctionError<OptionsRepo['getOptions']>;

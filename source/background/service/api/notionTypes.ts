@@ -1,7 +1,7 @@
 import type {GetTokenInteractor} from '../../usecase/getToken';
 import type {SetTokenInteractor} from '../../usecase/setToken';
-import {Result} from '../../../lib/result';
-import type {FunctionError} from '../../../lib/result';
+import {Result} from '@lib/result';
+import type {FunctionError} from '@lib/result';
 
 type MessagingError = 'messaging-error';
 

@@ -1,6 +1,6 @@
 import {onMessage, sendMessage} from 'webext-bridge';
-import {createLog} from '../../../lib/log';
-import {resultError, resultOk, serializeResult} from '../../../lib/result';
+import {createLog} from '@lib/log';
+import {resultError, resultOk, serializeResult} from '@lib/result';
 import {validateToken} from '../notion/notion';
 import {newGetTokenInteractor, GetTokenRepo} from '../../usecase/getToken';
 import {newSetTokenInteractor, SetTokenRepo} from '../../usecase/setToken';

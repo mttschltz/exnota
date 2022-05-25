@@ -1,5 +1,5 @@
-import {createLog} from '../../lib/log';
-import {FunctionError, Result, resultOk} from '../../lib/result';
+import {createLog} from '@lib/log';
+import {FunctionError, Result, resultOk} from '@lib/result';
 import {Options} from '../options';
 import {OptionsRepo} from '../repo';
 

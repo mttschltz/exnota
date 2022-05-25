@@ -1,9 +1,9 @@
 import {browser} from 'webextension-polyfill-ts';
 import OptionsSync from 'webext-options-sync';
 import {startGetTokenListener, startSetTokenListener} from '../api/notion';
-import {translate} from '../../../lib/i18n';
+import {translate} from '@lib/i18n';
 import {newOptionsRepo} from '../../repo/options';
-import {createLog} from '../../../lib/log';
+import {createLog} from '@lib/log';
 
 const log = createLog('background', 'Index');
 
