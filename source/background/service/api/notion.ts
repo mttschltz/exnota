@@ -1,9 +1,9 @@
 import {onMessage, sendMessage} from 'webext-bridge';
-import {createLog} from '../../util/log';
-import {resultError, resultOk, serializeResult} from '../../util/result';
-import {validateToken} from '../api/notion';
-import {newGetTokenInteractor, GetTokenRepo} from '../usecase/getToken';
-import {newSetTokenInteractor, SetTokenRepo} from '../usecase/setToken';
+import {createLog} from '../../../util/log';
+import {resultError, resultOk, serializeResult} from '../../../util/result';
+import {validateToken} from '../notion/notion';
+import {newGetTokenInteractor, GetTokenRepo} from '../../usecase/getToken';
+import {newSetTokenInteractor, SetTokenRepo} from '../../usecase/setToken';
 import {GetTokenResponse, SetTokenResponse} from './notionTypes';
 
 const startGetTokenListener = (repo: GetTokenRepo): void => {

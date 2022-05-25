@@ -20,7 +20,7 @@ import {browser} from 'webextension-polyfill-ts';
 import {FunctionComponent, useCallback, useEffect, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
 import {Translate, useTranslate} from '../../../util/i18n';
-import {getToken, setToken} from '../../message/notion';
+import {getToken, setToken} from '../../service/api/notion';
 import {FunctionError, ResultError} from '../../../util/result';
 
 const Spinner: FunctionComponent = () => {
