@@ -225,8 +225,8 @@ module.exports = {
     // copy static assets
     new CopyWebpackPlugin({
       patterns: [
-        {from: 'source/assets', to: 'assets'},
-        {from: 'source/_locales', to: '_locales'},
+        {from: 'source/extension/assets', to: 'assets'},
+        {from: 'source/extension/_locales', to: '_locales'},
       ],
     }),
     // plugin to enable browser reloading in development mode

@@ -5,8 +5,8 @@ import {
   Trans,
   useTranslation,
 } from 'react-i18next';
-import common from '../_locales/en/common.json';
-import setup from '../_locales/en/setup.json';
+import common from './en/common.json';
+import setup from './en/setup.json';
 
 const resources = {
   en: {
