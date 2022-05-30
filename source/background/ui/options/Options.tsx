@@ -21,7 +21,7 @@ import {browser} from 'webextension-polyfill-ts';
 import {useCallback, useEffect, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
 import {Translate, useTranslate} from '@background/ui/i18n/i18n';
-import {getToken, setToken} from '@background/service/api/notion';
+import {getToken, setToken} from '@background/service/api/token';
 import {FunctionError, ResultError} from '@lib/result';
 
 const ErrorWithDetails: React.FC<{

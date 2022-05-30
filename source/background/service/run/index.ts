@@ -6,7 +6,7 @@ import {createLog} from '@lib/log';
 import {
   startGetTokenListener,
   startSetTokenListener,
-} from '@background/service/api/notion';
+} from '@background/service/api/token';
 
 const log = createLog('background', 'Index');
 

@@ -10,7 +10,7 @@ import {
   newSetTokenInteractor,
   SetTokenRepo,
 } from '@background/usecase/setToken';
-import {GetTokenResponse, SetTokenResponse} from './notionTypes';
+import {GetTokenResponse, SetTokenResponse} from './tokenTypes';
 
 const startGetTokenListener = (repo: GetTokenRepo): void => {
   const log = createLog('background', 'GetTokenMessageListener');
