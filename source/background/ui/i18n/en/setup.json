@@ -3,6 +3,7 @@
     "error_summary": "Error: '{{message}}'. Code: '{{code}}'. ",
     "loading.error": "Couldn't get token.",
     "token.save_and_test": "Save and Test",
+    "token.saved": "Saved",
     "token.label": "Internal Integration Token",
     "token.error_empty": "Please paste the internal integration token. See below for instructions.",
     "token.error_invalid": "Token not valid. Please make sure you entered it correctly.",

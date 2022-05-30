@@ -227,7 +227,9 @@ const TokenForm: React.FC<{token: string | undefined}> = ({
               type="submit"
               disabled={saving || valid}
               primary
-              label={t('setup:token.save_and_test')}
+              label={t(
+                valid ? 'setup:token.saved' : 'setup:token.save_and_test'
+              )}
             />
           </Box>
         </Box>
