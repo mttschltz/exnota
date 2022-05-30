@@ -15,49 +15,14 @@ import {
   FormField,
   Form,
   Button,
+  Spinner,
 } from 'grommet';
 import {browser} from 'webextension-polyfill-ts';
-import {FunctionComponent, useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
 import {Translate, useTranslate} from '@background/ui/i18n/i18n';
 import {getToken, setToken} from '@background/service/api/notion';
 import {FunctionError, ResultError} from '@lib/result';
-
-const Spinner: FunctionComponent = () => {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      style={{
-        margin: 'auto',
-        display: 'block',
-        shapeRendering: 'auto',
-      }}
-      width="200px"
-      height="200px"
-      viewBox="0 0 100 100"
-      preserveAspectRatio="xMidYMid"
-    >
-      <circle
-        cx="50"
-        cy="50"
-        fill="none"
-        stroke="#1d0e0b"
-        strokeWidth="10"
-        r="35"
-        strokeDasharray="164.93361431346415 56.97787143782138"
-      >
-        <animateTransform
-          attributeName="transform"
-          type="rotate"
-          repeatCount="indefinite"
-          dur="1s"
-          values="0 50 50;360 50 50"
-          keyTimes="0;1"
-        />
-      </circle>
-    </svg>
-  );
-};
 
 const ErrorWithDetails: React.FC<{
   message: string;
@@ -277,7 +242,15 @@ const Options: React.FC = () => {
               </Heading>
             </Box>
           </Header>
-          {token.loading && <Spinner />}
+          {token.loading && (
+            <Box
+              align="center"
+              justify="center"
+              height={{height: 'medium', max: '50vh'}}
+            >
+              <Spinner />
+            </Box>
+          )}
           {!token.loading && token.getTokenError && (
             <ErrorWithDetails
               customMessage={t('setup:loading.error')}
