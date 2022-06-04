@@ -271,14 +271,6 @@ const Options: React.FC = () => {
                   <Paragraph fill={true} margin={{top: 'none'}}>
                     {t('setup:connect.description')}
                   </Paragraph>
-                  <Box
-                    round="small"
-                    pad="small"
-                    border="all"
-                    margin={{bottom: 'large'}}
-                  >
-                    {t('setup:connect.adminReminder')}
-                  </Box>
                   <InstructionsHeading>
                     {t('setup:connect.createIntegrationTitle')}
                   </InstructionsHeading>

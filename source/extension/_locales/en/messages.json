@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "Exnota - Highlights to Notion (Admin required)",
+    "message": "Exnota - Highlights to Notion",
     "description": "Name of the extension."
   },
   "extensionNameShort": {
@@ -8,7 +8,7 @@
     "description": "Short name of the extension."
   },
   "extensionDescription": {
-    "message": "Save web highlights to Notion in one click. Admin access required",
+    "message": "Save web highlights to Notion, in one click.",
     "description": "Description of the extension."
   }
 }
