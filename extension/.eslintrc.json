@@ -1,15 +1,16 @@
 {
 	"extends": [
 		"@abhijithvijayan/eslint-config/typescript",
-		"@abhijithvijayan/eslint-config/node",
 		"@abhijithvijayan/eslint-config/react"
 	],
 	"parserOptions": {
 		"project": [
-			"./tsconfig.json"
+			"./extension/tsconfig.json",
+			"./service/tsconfig.json"
 		],
 		"sourceType": "module"
 	},
+	"ignorePatterns": ["jest.config.js"],
 	"rules": {
 		"no-console": "off",
 		"no-undef": "off",
@@ -22,13 +23,11 @@
 		"max-classes-per-file": "off",
 		"node/no-missing-import": "off",
 		"node/no-unpublished-import": "off",
-		"node/no-unsupported-features/es-syntax": ["error", {
-			"ignores": ["modules"]
-			}],
 		"@typescript-eslint/no-use-before-define": "off"
 	},
 	"env": {
-		"webextensions": true
+		"webextensions": true,
+		"browser": true
 	},
 	"settings": {
 		"node": {
