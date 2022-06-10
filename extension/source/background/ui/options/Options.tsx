@@ -1,28 +1,20 @@
 import * as React from 'react';
-import {StatusGood, StatusPlaceholder} from 'grommet-icons';
 import {
-  Anchor,
   Grommet,
   Image,
   Heading,
   Page,
   PageContent,
-  TextInput,
-  Text,
   Box,
   Header,
   Paragraph,
-  FormField,
-  Form,
-  Button,
   Spinner,
+  Button,
 } from 'grommet';
 import {browser} from 'webextension-polyfill-ts';
-import {useCallback, useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
-import {Translate, useTranslate} from '@background/ui/i18n/i18n';
-import {getToken, setToken} from '@background/service/api/token';
-import {FunctionError, ResultError} from '@lib/result';
+import {useTranslate} from '@background/ui/i18n/i18n';
 
 const ErrorWithDetails: React.FC<{
   message: string;
@@ -47,190 +39,128 @@ const ErrorWithDetails: React.FC<{
   );
 };
 
-const InstructionsHeading: React.FC = ({children}) => {
-  return (
-    <Heading level={3} size="5" margin={{bottom: 'small'}}>
-      {children}
-    </Heading>
-  );
-};
-
-const InstructionsDescription: React.FC = ({children}) => {
-  return (
-    <Paragraph margin={{top: 'none', bottom: 'medium'}} fill={true}>
-      {children}
-    </Paragraph>
-  );
-};
-
-const InstructionsColumns: React.FC = ({children}) => {
-  return (
-    <Box direction="row" gap="medium" margin={{bottom: 'medium'}}>
-      {children}
-    </Box>
-  );
-};
-
-const InstructionsColumnText: React.FC = ({children}) => {
-  return (
-    <Box basis="50%" flex={{shrink: 0}}>
-      {children}
-    </Box>
-  );
-};
-const InstructionsColumnImage: React.FC = ({children}) => {
-  return (
-    <Box border="all" alignSelf="start">
-      {children}
-    </Box>
-  );
-};
-
-const InstructionsStep: React.FC = ({children}) => {
-  return (
-    <Paragraph margin={{top: 'none', bottom: 'medium'}}>{children}</Paragraph>
-  );
-};
-
-interface GetToken {
-  readonly loading: boolean;
-  readonly token: string | undefined;
-  readonly getTokenError: ResultError<FunctionError<typeof getToken>> | null;
+interface ConnectionState {
+  readonly initializingConnection: boolean;
+  state: 'no-code' | 'no-token';
+  readonly error?: string; // TODO: Update when there are error messages
 }
 
-const useGetToken = (): GetToken => {
-  const [loading, setLoading] = useState(true);
-  const [fetchedToken, setFetchedToken] =
-    useState<string | undefined>(undefined);
-  const [getTokenError, setGetTokenError] =
-    useState<GetToken['getTokenError']>(null);
+interface GetConnectionState {
+  readonly loading: boolean;
+  readonly screen:
+    | ConnectStartScreen
+    | ConnectStep1Screen
+    | ConnectStep2Screen
+    | null;
+}
 
+type ScreenType = 'connect-start' | 'connect-step1' | 'connect-step2';
+
+interface ConnectStartScreen {
+  readonly __type: 'connect-start';
+  readonly start: () => void;
+}
+interface ConnectStep1Screen {
+  readonly __type: 'connect-step1';
+  readonly next: () => void;
+}
+interface ConnectStep2Screen {
+  readonly __type: 'connect-step2';
+  readonly giveAccess: () => void;
+}
+
+const useGetConnectionState = (): GetConnectionState => {
+  const [loading] = useState(false); // TODO: Default to true
+  const [state] = useState<ConnectionState | null>({
+    // TODO: Default to null
+    initializingConnection: true,
+    state: 'no-code',
+  });
+  const [screen, setScreen] = useState<GetConnectionState['screen'] | null>(
+    null
+  );
+  const [screenType, setScreenType] = useState<ScreenType | null>(null);
+
+  const connectStartScreen: ConnectStartScreen = useMemo(
+    () => ({
+      __type: 'connect-start',
+      start: (): void => setScreenType('connect-step1'),
+    }),
+    []
+  );
+  const connectStep1Screen: ConnectStep1Screen = useMemo(
+    () => ({
+      __type: 'connect-step1',
+      next: (): void => setScreenType('connect-step2'),
+    }),
+    []
+  );
+  const connectStep2Screen: ConnectStep2Screen = useMemo(
+    () => ({
+      __type: 'connect-step2',
+      giveAccess: (): void => {},
+    }),
+    []
+  );
+
+  // Update screen type on state change
   useEffect(() => {
-    const getTokenAsync = async (): Promise<void> => {
-      const result = await getToken();
+    switch (state?.state) {
+      case 'no-code':
+        setScreenType('connect-start');
+        break;
+      default:
+        break;
+    }
+  }, [connectStartScreen, state?.state]);
 
-      if (!result.ok) {
-        setGetTokenError(result);
-      } else {
-        setFetchedToken(result.value);
-      }
-      setLoading(false);
-    };
-    getTokenAsync();
-  }, []);
+  // Update screen on screen type change
+  useEffect(() => {
+    switch (screenType) {
+      case 'connect-start':
+        setScreen(connectStartScreen);
+        break;
+      case 'connect-step1':
+        setScreen(connectStep1Screen);
+        break;
+      case 'connect-step2':
+        setScreen(connectStep2Screen);
+        break;
+      default:
+        break;
+    }
+  }, [screenType, connectStartScreen, connectStep1Screen, connectStep2Screen]);
+
+  // TODO: Get state from message API
+  // useEffect(() => {
+  //   const getTokenAsync = async (): Promise<void> => {
+  //     const result = await getToken();
+
+  //     if (!result.ok) {
+  //       setGetTokenError(result);
+  //     } else {
+  //       setFetchedToken(result.value);
+  //     }
+  //     setLoading(false);
+  //   };
+  //   getTokenAsync();
+  // }, []);
 
   return {
     loading,
-    token: fetchedToken,
-    getTokenError,
+    screen,
   };
-};
-
-const TokenForm: React.FC<{token: string | undefined}> = ({
-  token: initialFormToken,
-}) => {
-  const t = useTranslate(['setup']);
-
-  const [formToken, setFormToken] = useState(initialFormToken);
-
-  const [setTokenError, setSetTokenError] =
-    useState<ResultError<FunctionError<typeof setToken>> | null>(null);
-  const [showEmptyTokenError, setEmptyTokenError] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [valid, setValid] = useState(false);
-
-  const onSubmit = useCallback(() => {
-    const setTokenAsync = async (): Promise<void> => {
-      if (!formToken) {
-        setEmptyTokenError(true);
-        return;
-      }
-      setSaving(true);
-      setSetTokenError(null);
-      const result = await setToken(formToken);
-      setSaving(false);
-
-      if (!result.ok) {
-        setSetTokenError(result);
-      } else {
-        setValid(true);
-      }
-    };
-    setTokenAsync();
-  }, [formToken]);
-
-  const onChange: React.ChangeEventHandler<HTMLInputElement> = (e): void => {
-    setValid(false);
-    setFormToken(e.currentTarget.value);
-
-    if (e.currentTarget.value.length > 0) {
-      setEmptyTokenError(false);
-    }
-  };
-
-  return (
-    <Form onSubmit={onSubmit}>
-      <Box direction="row">
-        <FormField label={t('setup:token.label')} width="medium">
-          <TextInput
-            id="notionIntegrationToken"
-            name="notionIntegrationToken"
-            value={formToken}
-            onChange={onChange}
-          />
-        </FormField>
-        <Box alignSelf="end" pad={{left: 'small'}}>
-          <Box
-            direction="row"
-            align="center"
-            gap="small"
-            margin={{bottom: '0.4rem'}}
-          >
-            {!valid && <StatusPlaceholder color="transparent" />}
-            {valid && <StatusGood />}
-            <Button
-              type="submit"
-              disabled={saving || valid}
-              primary
-              label={t(
-                valid ? 'setup:token.saved' : 'setup:token.save_and_test'
-              )}
-            />
-          </Box>
-        </Box>
-      </Box>
-
-      {showEmptyTokenError && (
-        <Text color="status-critical">{t('setup:token.error_empty')}</Text>
-      )}
-      {setTokenError?.errorType === 'notion-invalid-token' && (
-        <Text color="status-critical">{t('setup:token.error_invalid')}</Text>
-      )}
-      {setTokenError?.errorType &&
-        setTokenError?.errorType !== 'notion-invalid-token' && (
-          <ErrorWithDetails
-            code={setTokenError.errorType}
-            message={setTokenError.message}
-          />
-        )}
-    </Form>
-  );
 };
 
 const Options: React.FC = () => {
   const t = useTranslate(['setup']);
-  const token = useGetToken();
+  const connectionState = useGetConnectionState();
 
   return (
     <Grommet theme={hpe}>
       <Page kind="narrow" pad={{bottom: 'xlarge'}}>
         <PageContent>
-          <Header>
-            <Box>
-              <Heading level="1" size="2">
-                {t('setup:title')}
-              </Heading>
-            </Box>
+          <Header justify="center">
             <Box align="center" direction="row" gap="xsmall">
               <Image
                 width="36px"
@@ -242,7 +172,8 @@ const Options: React.FC = () => {
               </Heading>
             </Box>
           </Header>
-          {token.loading && (
+          {/* TODO: Replace with loading state from message API */}
+          {connectionState.loading && (
             <Box
               align="center"
               justify="center"
@@ -251,116 +182,32 @@ const Options: React.FC = () => {
               <Spinner />
             </Box>
           )}
-          {!token.loading && token.getTokenError && (
+          {/* TODO: Replace with loading state from message API */}
+          {!connectionState.loading && !connectionState.screen && (
             <ErrorWithDetails
               customMessage={t('setup:loading.error')}
-              message={token.getTokenError.message}
-              code={token.getTokenError.errorType}
+              message={'missing error'}
+              code={'missing error'}
             />
           )}
-          {!token.loading && !token.getTokenError && (
-            <Box direction="column">
-              <Box>
-                <TokenForm token={token.token} />
-              </Box>
-              <Box>
+          {!connectionState.loading &&
+            connectionState.screen?.__type === 'connect-start' && (
+              <Box
+                direction="column"
+                height={{min: '50vh'}}
+                justify="center"
+                align="center"
+              >
+                <Paragraph>{t('setup:connect.description')}</Paragraph>
                 <Box>
-                  <Heading level={2} size="2" margin={{bottom: 'xxsmall'}}>
-                    {t('setup:connect.title')}
-                  </Heading>
-                  <Paragraph fill={true} margin={{top: 'none'}}>
-                    {t('setup:connect.description')}
-                  </Paragraph>
-                  <InstructionsHeading>
-                    {t('setup:connect.createIntegrationTitle')}
-                  </InstructionsHeading>
-                  <InstructionsColumns>
-                    <InstructionsColumnText>
-                      <InstructionsStep>
-                        {t('setup:connect.instruction1')}
-                      </InstructionsStep>
-                      <InstructionsStep>
-                        <Translate i18nKey="connect.instruction2">
-                          Go to{' '}
-                          <Anchor href="https://www.notion.com/my-integrations">
-                            https://www.notion.com/my-integrations
-                          </Anchor>
-                          .
-                        </Translate>
-                      </InstructionsStep>
-                      <InstructionsStep>
-                        {t('setup:connect.instruction3')}
-                      </InstructionsStep>
-                    </InstructionsColumnText>
-                    <InstructionsColumnImage>
-                      <Image src="../assets/setup/connect-3-new-integration-wide.png" />
-                    </InstructionsColumnImage>
-                  </InstructionsColumns>
-
-                  <InstructionsHeading>
-                    {t('setup:connect.createNameSelectTitle')}
-                  </InstructionsHeading>
-                  <InstructionsColumns>
-                    <InstructionsColumnText>
-                      <InstructionsStep>
-                        {t('setup:connect.instruction4')}
-                      </InstructionsStep>
-                      <InstructionsStep>
-                        {t('setup:connect.instruction5')}
-                      </InstructionsStep>
-                    </InstructionsColumnText>
-                    <InstructionsColumnImage>
-                      <Image src="../assets/setup/connect-4-5-name-and-workspace.png" />
-                    </InstructionsColumnImage>
-                  </InstructionsColumns>
-
-                  <InstructionsHeading>
-                    {t('setup:connect.configureCapabilitiesTitle')}
-                  </InstructionsHeading>
-                  <InstructionsDescription>
-                    {t('setup:connect.configureCapabilitiesDescription')}
-                  </InstructionsDescription>
-                  <InstructionsColumns>
-                    <InstructionsColumnText>
-                      <InstructionsStep>
-                        {t('setup:connect.instruction6')}
-                      </InstructionsStep>
-                      <InstructionsStep>
-                        {t('setup:connect.instruction7')}
-                      </InstructionsStep>
-                    </InstructionsColumnText>
-                    <InstructionsColumnImage>
-                      <Image src="../assets/setup/connect-6-7-capabilities.png" />
-                    </InstructionsColumnImage>
-                  </InstructionsColumns>
-
-                  <InstructionsHeading>
-                    {t('setup:connect.getTokenTitle')}
-                  </InstructionsHeading>
-                  <InstructionsColumns>
-                    <InstructionsColumnText>
-                      <InstructionsStep>
-                        {t('setup:connect.instruction8')}
-                      </InstructionsStep>
-                    </InstructionsColumnText>
-                    <InstructionsColumnImage>
-                      <Image src="../assets/setup/connect-8-submit-wide.png" />
-                    </InstructionsColumnImage>
-                  </InstructionsColumns>
-                  <InstructionsColumns>
-                    <InstructionsColumnText>
-                      <InstructionsStep>
-                        {t('setup:connect.instruction9')}
-                      </InstructionsStep>
-                    </InstructionsColumnText>
-                    <InstructionsColumnImage>
-                      <Image src="../assets/setup/connect-9-copy-token-blur.png" />
-                    </InstructionsColumnImage>
-                  </InstructionsColumns>
+                  <Button
+                    primary
+                    label={t('setup:connect.start')}
+                    onClick={connectionState.screen.start}
+                  />
                 </Box>
               </Box>
-            </Box>
-          )}
+            )}
         </PageContent>
       </Page>
     </Grommet>
