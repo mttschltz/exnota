@@ -10,11 +10,13 @@ import {
   Paragraph,
   Spinner,
   Button,
+  Text,
+  Anchor,
 } from 'grommet';
 import {browser} from 'webextension-polyfill-ts';
 import {useEffect, useMemo, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
-import {useTranslate} from '@background/ui/i18n/i18n';
+import {useTranslate, Translate} from '@background/ui/i18n/i18n';
 
 const ErrorWithDetails: React.FC<{
   message: string;
@@ -152,6 +154,23 @@ const useGetConnectionState = (): GetConnectionState => {
   };
 };
 
+const StepHeading: React.FC<{
+  heading: Parameters<ReturnType<typeof useTranslate>>[0];
+}> = ({heading: translation}) => {
+  const t = useTranslate(['setup']);
+
+  return (
+    <Heading level={1}>
+      <Box direction="column">
+        <Text size="small" weight="normal">
+          {t('setup:connect.step_heading')}
+        </Text>
+        <Text size="xlarge">{t(translation)}</Text>
+      </Box>
+    </Heading>
+  );
+};
+
 const Options: React.FC = () => {
   const t = useTranslate(['setup']);
   const connectionState = useGetConnectionState();
@@ -198,15 +217,40 @@ const Options: React.FC = () => {
                 justify="center"
                 align="center"
               >
-                <Paragraph>{t('setup:connect.description')}</Paragraph>
+                <Paragraph>{t('setup:connect.start_description')}</Paragraph>
                 <Box>
                   <Button
                     primary
-                    label={t('setup:connect.start')}
+                    label={t('setup:connect.start_button')}
                     onClick={connectionState.screen.start}
                   />
                 </Box>
               </Box>
+            )}
+          {!connectionState.loading &&
+            connectionState.screen?.__type === 'connect-step1' && (
+              // Using Box instead of div causes margins to not collapse
+              <div>
+                <StepHeading heading="setup:connect.step1_heading" />
+                <Paragraph>
+                  <Translate i18nKey="connect.step1_description_1">
+                    Open{' '}
+                    <Anchor target="_blank" href="https://www.notion.com">
+                      Notion
+                    </Anchor>{' '}
+                    and create a page for Exnota to save highlights to.
+                  </Translate>
+                </Paragraph>
+                <Paragraph>{t('setup:connect.step1_description_2')}</Paragraph>
+                <Box justify="end" align="center" gap="xsmall" direction="row">
+                  <Text>{t('setup:connect.step1_confirm')}</Text>
+                  <Button
+                    primary
+                    label={t('common:action.next')}
+                    onClick={connectionState.screen.next}
+                  />
+                </Box>
+              </div>
             )}
         </PageContent>
       </Page>

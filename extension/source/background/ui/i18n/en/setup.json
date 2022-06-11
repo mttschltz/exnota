@@ -8,6 +8,11 @@
     "token.error_empty": "Please paste the internal integration token. See below for instructions.",
     "token.error_invalid": "Token not valid. Please make sure you entered it correctly.",
     "token.error_other": "Error while validating.",
-    "connect.description": "To save highlights, you need to give Exnota access to a page in Notion. Your highlights will be saved there.",
-    "connect.start": "Connect Exnota to Notion"
+    "connect.start_description": "To save highlights, you need to give Exnota access to a page in Notion. Your highlights will be saved there.",
+    "connect.start_button": "Connect Exnota to Notion",
+    "connect.step_heading": "Connect Exnota to Notion",
+    "connect.step1_heading": "Step 1 of 2: Create a page",
+    "connect.step1_description_1": "Open {1}Notion{2} and create a page for Exnota to save highlights to.",
+    "connect.step1_description_2": "If you already have a page in mind, continue to the next step.",
+    "connect.step1_confirm": "I have a page ready"
 }
