@@ -252,6 +252,27 @@ const Options: React.FC = () => {
                 </Box>
               </div>
             )}
+          {!connectionState.loading &&
+            connectionState.screen?.__type === 'connect-step2' && (
+              // Using Box instead of div causes margins to not collapse
+              <div>
+                <StepHeading heading="setup:connect.step2_heading" />
+                <Paragraph>
+                  <Translate i18nKey="connect.step2_description">
+                    Click <Text weight="bold">Give access</Text> to open a
+                    window where Notion allows you to give Exnota access to the
+                    page where it should save highlights to.
+                  </Translate>
+                </Paragraph>
+                <Box justify="end" align="center" gap="xsmall" direction="row">
+                  <Button
+                    primary
+                    label={t('setup:connect.step2_give_acess')}
+                    onClick={connectionState.screen.giveAccess}
+                  />
+                </Box>
+              </div>
+            )}
         </PageContent>
       </Page>
     </Grommet>

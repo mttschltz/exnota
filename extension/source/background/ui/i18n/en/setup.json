@@ -14,5 +14,8 @@
     "connect.step1_heading": "Step 1 of 2: Create a page",
     "connect.step1_description_1": "Open {1}Notion{2} and create a page for Exnota to save highlights to.",
     "connect.step1_description_2": "If you already have a page in mind, continue to the next step.",
-    "connect.step1_confirm": "I have a page ready"
+    "connect.step1_confirm": "I have a page ready",
+    "connect.step2_heading": "Step 2 of 2: Give access",
+    "connect.step2_description": "Click {1}Give access{2} to open a window where Notion allows you to give Exnota access to the page where it should save highlights to.",
+    "connect.step2_give_acess": "Give access"
 }
