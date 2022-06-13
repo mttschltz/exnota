@@ -6,7 +6,8 @@ import {createLog} from '@lib/log';
 import {
   startGetTokenListener,
   startSetTokenListener,
-} from '@background/service/api/connect';
+  startGetClientIdListener,
+} from '@background/service/api/notion';
 
 const log = createLog('background', 'Index');
 
@@ -37,3 +38,6 @@ startGetTokenListener(optionsRepo);
 
 log.info('Starting set token listener');
 startSetTokenListener(optionsRepo);
+
+log.info('Starting get client ID listener');
+startGetClientIdListener();

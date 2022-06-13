@@ -17,6 +17,7 @@ import {browser} from 'webextension-polyfill-ts';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
 import {useTranslate, Translate} from '@background/ui/i18n/i18n';
+import {getClientId} from '@background/service/api/notion';
 
 const ErrorWithDetails: React.FC<{
   message: string;
@@ -83,12 +84,24 @@ const useConnectStep2Screen = (): ConnectStep2Screen => {
     setError(undefined);
 
     const redirectURL = browser.identity.getRedirectURL();
-    const clientID = '';
-    // TODO: Get client_id from serverless function... get it working locally
+    let clientId;
+
+    try {
+      const clientIdResult = await getClientId();
+      if (!clientIdResult.ok) {
+        setError(clientIdResult.message);
+        return;
+      }
+      clientId = clientIdResult.value;
+    } catch {
+      setError(t('setup:connect.step2_generic_error'));
+      return;
+    }
+
     try {
       const responseURL = await browser.identity.launchWebAuthFlow({
         interactive: true,
-        url: `https://api.notion.com/v1/oauth/authorize?owner=user&client_id=${clientID}&redirect_uri=${encodeURIComponent(
+        url: `https://api.notion.com/v1/oauth/authorize?owner=user&client_id=${clientId}&redirect_uri=${encodeURIComponent(
           redirectURL
         )}&response_type=code`,
       });

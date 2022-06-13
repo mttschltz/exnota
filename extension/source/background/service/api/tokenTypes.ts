@@ -5,14 +5,21 @@ import type {FunctionError} from '@lib/result';
 
 type MessagingError = 'messaging-error';
 
-type GetTokenResponse = Result<
+type GetNotionClientIdMessageResponse = Result<string, 'fetching-client-id'>;
+
+type GetTokenMessageResponse = Result<
   string | undefined,
   FunctionError<GetTokenInteractor['getToken']> | MessagingError
 >;
 
-type SetTokenResponse = Result<
+type SetTokenMessageResponse = Result<
   undefined,
   FunctionError<SetTokenInteractor['setToken']> | MessagingError
 >;
 
-export type {GetTokenResponse, SetTokenResponse, MessagingError};
+export type {
+  GetTokenMessageResponse,
+  GetNotionClientIdMessageResponse,
+  SetTokenMessageResponse,
+  MessagingError,
+};

@@ -1,7 +1,11 @@
 {
-    "include": ["src"],
+    "include": ["src", "../types", "../api/api.ts"],
     "compilerOptions": {
         "esModuleInterop": true,
-        "isolatedModules": true
+        "isolatedModules": true,
+        "baseUrl": "./",
+        "paths": {
+			"@api/*": ["../api/*"]
+		},
     }
 }

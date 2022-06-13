@@ -18,11 +18,12 @@
 		"baseUrl": "./source",
 		"paths": {
 			"@lib/*": ["lib/*"],
-			"@background/*": ["background/*"]
+			"@background/*": ["background/*"],
+			"@api/*": ["../../api/*"]
 		},
 	},
 	"include": [
 		"source",
-		"webpack.config.js"
-	],
+		"webpack.config.js",
+		"../api"	],
 }

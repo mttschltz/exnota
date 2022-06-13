@@ -1,9 +1,20 @@
 import {ProtocolWithReturn} from 'webext-bridge';
-import type {GetTokenResponse, SetTokenResponse} from './tokenTypes';
+import type {
+  GetNotionClientIdMessageResponse,
+  GetTokenMessageResponse,
+  SetTokenMessageResponse,
+} from './tokenTypes';
 
 declare module 'webext-bridge' {
   export interface ProtocolMap {
-    'notion.getToken': ProtocolWithReturn<undefined, GetTokenResponse>;
-    'notion.setToken': ProtocolWithReturn<{token: string}, SetTokenResponse>;
+    'notion.getClientId': ProtocolWithReturn<
+      undefined,
+      GetNotionClientIdMessageResponse
+    >;
+    'notion.getToken': ProtocolWithReturn<undefined, GetTokenMessageResponse>;
+    'notion.setToken': ProtocolWithReturn<
+      {token: string},
+      SetTokenMessageResponse
+    >;
   }
 }
