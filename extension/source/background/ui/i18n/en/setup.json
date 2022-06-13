@@ -17,5 +17,8 @@
     "connect.step1_confirm": "I have a page ready",
     "connect.step2_heading": "Step 2 of 2: Give access",
     "connect.step2_description": "Click {1}Give access{2} to open a window where Notion allows you to give Exnota access to the page where it should save highlights to.",
-    "connect.step2_give_acess": "Give access"
+    "connect.step2_give_acess": "Give access",
+    "connect.step2_try_again": "Try again",
+    "connect.step2_denied_access": "You didn't appear to give Exnota access, which it needs to save highlights :( Please try again.",
+    "connect.step2_generic_error": "That didn't work :( Please try again."
 }

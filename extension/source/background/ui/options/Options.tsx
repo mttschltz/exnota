@@ -14,7 +14,7 @@ import {
   Anchor,
 } from 'grommet';
 import {browser} from 'webextension-polyfill-ts';
-import {useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
 import {useTranslate, Translate} from '@background/ui/i18n/i18n';
 
@@ -68,8 +68,68 @@ interface ConnectStep1Screen {
 }
 interface ConnectStep2Screen {
   readonly __type: 'connect-step2';
+  readonly connecting: boolean;
   readonly giveAccess: () => void;
+  readonly error?: string;
 }
+
+const useConnectStep2Screen = (): ConnectStep2Screen => {
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [connecting, setConnecting] = useState(false);
+  const [firstAttempt, setFirstAttempt] = useState(true);
+  const t = useTranslate(['setup']);
+
+  const giveAccess: ConnectStep2Screen['giveAccess'] = useCallback(async () => {
+    setConnecting(true);
+    setError(undefined);
+    const testValid = !firstAttempt;
+    setFirstAttempt(false);
+
+    const redirectURL = browser.identity.getRedirectURL();
+    const clientID = '';
+    // TODO: Get client_id from serverless function... get it working locally
+    try {
+      const responseURL = !testValid
+        ? await browser.identity.launchWebAuthFlow({
+            interactive: true,
+            url: `https://api.notion.com/v1/oauth/authorize?owner=user&client_id=x${clientID}&redirect_uri=${encodeURIComponent(
+              redirectURL
+            )}&response_type=code`,
+          })
+        : await browser.identity.launchWebAuthFlow({
+            interactive: true,
+            url: `https://api.notion.com/v1/oauth/authorize?owner=user&client_id=${clientID}&redirect_uri=${encodeURIComponent(
+              redirectURL
+            )}&response_type=code`,
+          });
+
+      const paramStr = responseURL.split('?')[1];
+      if (!paramStr) {
+        setError(t('setup:connect.step2_generic_error'));
+        return;
+      }
+
+      const params = new URLSearchParams(paramStr);
+      const code = params.get('code');
+      console.log(`code=${code}`);
+      setConnecting(false);
+    } catch {
+      setError(t('setup:connect.step2_denied_access'));
+      setConnecting(false);
+    }
+  }, [firstAttempt, t]);
+
+  const screen: ConnectStep2Screen = useMemo(() => {
+    return {
+      __type: 'connect-step2',
+      giveAccess,
+      error,
+      connecting,
+    };
+  }, [connecting, error, giveAccess]);
+
+  return screen;
+};
 
 const useGetConnectionState = (): GetConnectionState => {
   const [loading] = useState(false); // TODO: Default to true
@@ -97,13 +157,8 @@ const useGetConnectionState = (): GetConnectionState => {
     }),
     []
   );
-  const connectStep2Screen: ConnectStep2Screen = useMemo(
-    () => ({
-      __type: 'connect-step2',
-      giveAccess: (): void => {},
-    }),
-    []
-  );
+
+  const connectStep2Screen = useConnectStep2Screen();
 
   // Update screen type on state change
   useEffect(() => {
@@ -264,10 +319,20 @@ const Options: React.FC = () => {
                     page where it should save highlights to.
                   </Translate>
                 </Paragraph>
+                {connectionState.screen.error && (
+                  <Paragraph color="status-critical">
+                    {connectionState.screen.error}
+                  </Paragraph>
+                )}
                 <Box justify="end" align="center" gap="xsmall" direction="row">
+                  {connectionState.screen.connecting && <Spinner />}
                   <Button
                     primary
-                    label={t('setup:connect.step2_give_acess')}
+                    label={
+                      connectionState.screen.connecting
+                        ? t('setup:connect.step2_try_again')
+                        : t('setup:connect.step2_give_acess')
+                    }
                     onClick={connectionState.screen.giveAccess}
                   />
                 </Box>

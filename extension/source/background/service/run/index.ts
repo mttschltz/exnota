@@ -6,7 +6,7 @@ import {createLog} from '@lib/log';
 import {
   startGetTokenListener,
   startSetTokenListener,
-} from '@background/service/api/token';
+} from '@background/service/api/connect';
 
 const log = createLog('background', 'Index');
 
