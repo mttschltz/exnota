@@ -76,32 +76,22 @@ interface ConnectStep2Screen {
 const useConnectStep2Screen = (): ConnectStep2Screen => {
   const [error, setError] = useState<string | undefined>(undefined);
   const [connecting, setConnecting] = useState(false);
-  const [firstAttempt, setFirstAttempt] = useState(true);
   const t = useTranslate(['setup']);
 
   const giveAccess: ConnectStep2Screen['giveAccess'] = useCallback(async () => {
     setConnecting(true);
     setError(undefined);
-    const testValid = !firstAttempt;
-    setFirstAttempt(false);
 
     const redirectURL = browser.identity.getRedirectURL();
     const clientID = '';
     // TODO: Get client_id from serverless function... get it working locally
     try {
-      const responseURL = !testValid
-        ? await browser.identity.launchWebAuthFlow({
-            interactive: true,
-            url: `https://api.notion.com/v1/oauth/authorize?owner=user&client_id=x${clientID}&redirect_uri=${encodeURIComponent(
-              redirectURL
-            )}&response_type=code`,
-          })
-        : await browser.identity.launchWebAuthFlow({
-            interactive: true,
-            url: `https://api.notion.com/v1/oauth/authorize?owner=user&client_id=${clientID}&redirect_uri=${encodeURIComponent(
-              redirectURL
-            )}&response_type=code`,
-          });
+      const responseURL = await browser.identity.launchWebAuthFlow({
+        interactive: true,
+        url: `https://api.notion.com/v1/oauth/authorize?owner=user&client_id=${clientID}&redirect_uri=${encodeURIComponent(
+          redirectURL
+        )}&response_type=code`,
+      });
 
       const paramStr = responseURL.split('?')[1];
       if (!paramStr) {
@@ -117,7 +107,7 @@ const useConnectStep2Screen = (): ConnectStep2Screen => {
       setError(t('setup:connect.step2_denied_access'));
       setConnecting(false);
     }
-  }, [firstAttempt, t]);
+  }, [t]);
 
   const screen: ConnectStep2Screen = useMemo(() => {
     return {
