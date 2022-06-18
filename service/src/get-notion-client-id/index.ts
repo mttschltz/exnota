@@ -1,9 +1,9 @@
 import { Handler } from "@netlify/functions";
-import { GetNotionClientIdApiResponse } from "@api/service";
+import { GetClientIdNotionApiResponse } from "@api/service";
 
 
 
-const resultOk = (response: GetNotionClientIdApiResponse) => {
+const resultOk = (response: GetClientIdNotionApiResponse) => {
   return {
     statusCode: 200,
     body: JSON.stringify(response),

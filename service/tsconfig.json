@@ -1,5 +1,6 @@
 {
     "include": ["src", "../types", "../api/api.ts"],
+    "extends": "@tsconfig/node14/tsconfig.json",
     "compilerOptions": {
         "esModuleInterop": true,
         "isolatedModules": true,

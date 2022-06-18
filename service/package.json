@@ -4,8 +4,11 @@
   "description": "Netlify functions supporting the Exnota extension",
   "private": true,
   "scripts": {},
-  "dependencies": {},
+  "dependencies": {
+    "node-fetch": "3.2.6"
+  },
   "devDependencies": {
+    "@tsconfig/node14": "1.0.3",
     "netlify-cli": "10.5.1"
   }
 }
