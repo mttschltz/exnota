@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "netlify functions:serve",
+            "type": "node",
+            "request": "launch",
+            "skipFiles": ["<node_internals>/**"],
+            "outFiles": ["${workspaceFolder}/.netlify/functions-serve/**/*.js"],
+            "program": "${workspaceFolder}/service/node_modules/.bin/netlify",
+            "args": ["functions:serve"],
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+  }

@@ -1,0 +1,11 @@
+{
+  "name": "service",
+  "version": "0.0.1",
+  "description": "Netlify functions supporting the Exnota extension",
+  "private": true,
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {
+    "netlify-cli": "10.5.1"
+  }
+}

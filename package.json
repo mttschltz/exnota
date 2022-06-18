@@ -4,7 +4,8 @@
   "description": "Save web highlights to Notion",
   "private": true,
   "workspaces": [
-    "extension"
+    "extension",
+    "service"
   ],
   "repository": "https://github.com/mttschltz/exnota.git",
   "author": {

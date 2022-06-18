@@ -25,6 +25,8 @@
     "grommet-styles": "^0.2.0",
     "grommet-theme-hpe": "^3.0.1",
     "i18next": "21.6.16",
+    "localforage": "1.10.0",
+    "localforage-webextensionstorage-driver": "3.0.0",
     "lodash": "4.17.21",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
