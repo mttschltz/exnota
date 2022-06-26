@@ -1,13 +1,14 @@
 import {browser} from 'webextension-polyfill-ts';
-import OptionsSync from 'webext-options-sync';
 import {translate} from '@background/ui/i18n/i18n';
-import {newOptionsRepo} from '@background/repo/options';
+import {newAuthRepo} from '@background/repo/auth';
 import {createLog} from '@lib/log';
 import {
-  startGetTokenListener,
-  startSetTokenListener,
   startGetClientIdListener,
-} from '@background/service/api/notion';
+  startConnectListener,
+} from '@background/service/message/auth';
+import * as localforage from 'localforage';
+import {local as localDriver} from 'localforage-webextensionstorage-driver';
+import {resultError} from '@lib/result';
 
 const log = createLog('background', 'Index');
 
@@ -17,27 +18,21 @@ browser.runtime.onInstalled.addListener((): void => {
   browser.runtime.openOptionsPage();
 });
 
-log.info('Creating options repo');
-const optionsRepo = newOptionsRepo(
-  new OptionsSync({
-    defaults: {
-      notionIntegrationToken: '',
-    },
-    logging: true,
+(async function f(): Promise<void> {
+  log.info('Creating options repo');
+  await localforage.defineDriver(localDriver);
+  const extensionStorage = localforage.createInstance({
+    driver: 'webExtensionLocalStorage',
+  });
+  const authRepo = newAuthRepo(extensionStorage);
 
-    // List of functions that are called when the extension is updated
-    // migrations: [
-    // Integrated utility that drops any properties that don't appear in the defaults
-    // OptionsSync.migrations.removeUnused,
-    // ],
-  })
-);
+  log.info('Starting get client ID listener');
+  startGetClientIdListener();
 
-log.info('Starting get token listener');
-startGetTokenListener(optionsRepo);
-
-log.info('Starting set token listener');
-startSetTokenListener(optionsRepo);
-
-log.info('Starting get client ID listener');
-startGetClientIdListener();
+  log.info('Starting connect listener');
+  startConnectListener({
+    getAuthConfig: authRepo.getConfig,
+    saveAuthConfig: authRepo.saveConfig,
+    saveOptionsConfig: () => Promise.resolve(resultError('', 'error')),
+  });
+})();

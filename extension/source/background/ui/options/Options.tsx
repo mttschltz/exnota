@@ -17,7 +17,7 @@ import {browser} from 'webextension-polyfill-ts';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
 import {useTranslate, Translate} from '@background/ui/i18n/i18n';
-import {getClientId} from '@background/service/api/notion';
+import {connect, getClientId} from '@background/service/message/auth';
 
 const ErrorWithDetails: React.FC<{
   message: string;
@@ -89,12 +89,18 @@ const useConnectStep2Screen = (): ConnectStep2Screen => {
     try {
       const clientIdResult = await getClientId();
       if (!clientIdResult.ok) {
-        setError(clientIdResult.message);
+        setError(
+          t('setup:connect.step2_clientid_error', {
+            code: clientIdResult.errorType,
+          })
+        );
+        setConnecting(false);
         return;
       }
       clientId = clientIdResult.value;
     } catch {
       setError(t('setup:connect.step2_generic_error'));
+      setConnecting(false);
       return;
     }
 
@@ -109,12 +115,38 @@ const useConnectStep2Screen = (): ConnectStep2Screen => {
       const paramStr = responseURL.split('?')[1];
       if (!paramStr) {
         setError(t('setup:connect.step2_generic_error'));
+        setConnecting(false);
         return;
       }
 
       const params = new URLSearchParams(paramStr);
       const code = params.get('code');
       console.log(`code=${code}`);
+
+      if (!code) {
+        // TODO: Customize error?
+        setError(t('setup:connect.step2_generic_error'));
+        setConnecting(false);
+        return;
+      }
+      const connectResult = await connect(code, redirectURL);
+      if (!connectResult.ok) {
+        switch (connectResult.errorType) {
+          case 'no-pages-granted':
+            // TODO: handle this
+            break;
+          default:
+            setError(
+              t('setup:connect.step2_generic_error', {
+                code: connectResult.errorType,
+              })
+            );
+            break;
+        }
+        setConnecting(false);
+        return;
+      }
+
       setConnecting(false);
     } catch {
       setError(t('setup:connect.step2_denied_access'));

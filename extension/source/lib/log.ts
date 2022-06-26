@@ -1,35 +1,54 @@
-import {isResult, ResultError, ResultMetadata} from './result';
+import {
+  isResult,
+  isResultOk,
+  Result,
+  ResultError,
+  ResultMetadata,
+} from './result';
 
 type Service = 'background' | 'options' | 'content';
 
 type Data = ResultMetadata;
 
-const formatData = (data?: Data | ResultError<string>): Data | undefined => {
-  if (isResult(data)) {
-    return {
-      errorMessage: data.message,
-      errorType: data.errorType,
-      errorMetadata: data.metadata,
-    };
+const formatData = (
+  data?: Data | Result<unknown, unknown>
+): Data | undefined => {
+  if (!isResult(data)) {
+    return data;
   }
-  return data;
+
+  if (isResultOk(data)) {
+    return undefined;
+  }
+  return {
+    errorMessage: data.message,
+    errorType: typeof data.errorType === 'string' ? data.errorType : '',
+    errorMetadata: data.metadata,
+    error: data.error
+      ? {
+          message: data.error.message,
+          name: data.error.name,
+          stack: data.error.stack,
+        }
+      : undefined,
+  };
 };
 
 const info =
   (service: Service, context: string) =>
-  (message: string, data?: Data | ResultError<string>): void => {
+  (message: string, data?: Data | Result<unknown, unknown>): void => {
     console.log(`[${service}] ${context}: ${message}`, formatData(data));
   };
 
 const warn =
   (service: Service, context: string) =>
-  (message: string, data?: Data | ResultError<string>): void => {
+  (message: string, data?: Data | Result<unknown, unknown>): void => {
     console.warn(`[${service}] ${context}: ${message}`, formatData(data));
   };
 
 const error =
   (service: Service, context: string) =>
-  (message: string, data?: Data | ResultError<string>): void => {
+  (message: string, data?: Data | Result<unknown, unknown>): void => {
     console.error(`[${service}] ${context}: ${message}`, formatData(data));
   };
 
@@ -39,15 +58,15 @@ const createLog = (
 ): {
   info: (
     message: string,
-    data?: Data | ResultError<string> | undefined
+    data?: Data | Result<unknown, unknown> | undefined
   ) => void;
   warn: (
     message: string,
-    data?: Data | ResultError<string> | undefined
+    data?: Data | Result<unknown, unknown> | undefined
   ) => void;
   error: (
     message: string,
-    data?: Data | ResultError<string> | undefined
+    data?: Data | ResultError<unknown> | undefined
   ) => void;
 } => {
   return {

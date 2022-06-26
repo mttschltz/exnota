@@ -19,8 +19,12 @@ interface GetClientIdNotionApiResponse {
 const GET_TOKEN =  'get-token'
 const getTokenNotionApiPath = () => `${BASE}${GET_TOKEN}`
 
-interface GetTokenNotionApiResponse {
+interface GetTokenNotionApiSuccessResponse {
     tokenResponse: any
+}
+
+interface GetTokenNotionApiErrorResponse {
+    error: typeof GET_TOKEN_ERROR[keyof typeof GET_TOKEN_ERROR]
 }
 
 // TODO: Refactor so that keys and values cannot be duplicates
@@ -38,6 +42,7 @@ const GET_TOKEN_ERROR = {...ERROR_COMMON,
     NOTION_OAUTH_TOKEN_INVALID_SCOPE: 'notion-invalid-scope',
     NOTION_OAUTH_TOKEN_UNKNOWN: 'notion-oauth-token-unknown',
     TOKEN_RESPONSE_NOT_PARSEABLE: 'token-response-not-parseable',
+    TOKEN_RESPONSE_MISSING_TOKEN: 'token-response-missing-token',
 } as const
 
 export {
@@ -45,5 +50,6 @@ export {
 }
 export type {
     GetClientIdNotionApiResponse,
-    GetTokenNotionApiResponse
+    GetTokenNotionApiSuccessResponse,
+    GetTokenNotionApiErrorResponse,
 }

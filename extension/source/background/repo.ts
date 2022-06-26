@@ -1,48 +1,28 @@
 import {FunctionError, Result} from '@lib/result';
-import {Options} from './options';
+import {AuthConfig, ExpectedTokenResponse, newAuthConfig} from './authConfig';
+import {OptionsConfig} from './optionsConfig';
 import {Page} from './page';
 
-interface TokenResponse {
-  access_token: string;
-  token_type?: 'bearer';
-  bot_id?: string;
-  workspace_name?: string;
-  workspace_icon?: string;
-  workspace_id?: string;
-  owner?: {
-    type?: 'user';
-    user?: {
-      object?: 'user';
-      id?: string;
-      name?: string;
-      avatar_url?: string;
-      type?: 'person';
-      person?: {
-        email?: string;
-      };
-    };
-  };
-}
+type RepoStorageSetError = 'storage-set';
+type RepoStorageGetError = 'storage-get';
 
-interface OptionsRepo {
-  readonly setCode: (code: string) => Promise<Result<void, 'options-sync'>>;
-  readonly setTokenResponse: (
-    tokenResponse: TokenResponse
-  ) => Promise<Result<void, 'options-sync'>>;
-  readonly setPageId: (pageId: string) => Promise<Result<void, 'options-sync'>>;
-  readonly getOptions: () => Promise<Result<Options, 'options-sync'>>;
-  readonly setNotionIntegrationToken: (
-    notionIntegrationToken: string
-  ) => Promise<
+interface AuthConfigRepo {
+  readonly getConfig: () => Promise<
     Result<
-      Options,
-      'options-sync' | FunctionError<Options['setNotionIntegrationToken']>
+      AuthConfig | undefined,
+      FunctionError<typeof newAuthConfig> | RepoStorageGetError
     >
   >;
+  readonly saveConfig: (
+    authConfig: AuthConfig
+  ) => Promise<Result<void, RepoStorageSetError>>;
 }
 
-interface PageRepo<E> {
-  readonly createPage: () => Promise<Result<Page, E>>;
+interface OptionsConfigRepo {
+  readonly saveConfig: (
+    optionsConfig: OptionsConfig
+  ) => Promise<Result<void, string>>;
+  readonly createPage: () => Promise<Result<Page, void>>;
 }
 
-export type {OptionsRepo, PageRepo, TokenResponse};
+export type {AuthConfigRepo, OptionsConfigRepo, ExpectedTokenResponse};

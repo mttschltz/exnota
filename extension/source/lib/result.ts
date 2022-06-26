@@ -36,7 +36,8 @@ interface ResultMetadata {
     | ResultMetadata
     | boolean
     | number
-    | string;
+    | string
+    | undefined;
 }
 
 class ResultErrorImpl<E> implements ResultError<E> {
