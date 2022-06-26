@@ -1,18 +1,24 @@
 import { Handler } from "@netlify/functions";
-import { GetTokenNotionApiResponse, GET_TOKEN_ERROR } from "@api/service";
+import { GetTokenNotionApiSuccessResponse, GET_TOKEN_ERROR } from "@api/service";
 import fetch from 'node-fetch'
 import type { Response } from 'node-fetch'
 
-
-
 const isNotionError = (json: unknown): json is { error: string } => typeof json === 'object' && json !== null && 'error' in json
+const isTokenResponse = (json: unknown): json is { access_token: string } => typeof json === 'object' && json !== null && 'access_token' in json
+
 
 const HEADER_APP_VERSION = 'x-app-version'
 
-const resultOk = (response: GetTokenNotionApiResponse) => {
+const COOKIE_TOKEN = 'exnota_notiontoken'
+
+const resultOk = (response: GetTokenNotionApiSuccessResponse, token: string) => {
   return {
     statusCode: 200,
     body: JSON.stringify(response),
+    headers: {
+      // TODO: Go through steps here: https://www.rdegges.com/2018/please-stop-using-local-storage/
+      'Set-Cookie': `${COOKIE_TOKEN}=${token}; Max-Age=63115200; SameSite=Strict`
+    }
   }
 }
 
@@ -139,10 +145,21 @@ const handler: Handler = async (event, context) => {
         statusCode: 400,
         body: JSON.stringify({error})
       }
+    }
+    
+  if (!isTokenResponse(json)) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({error: GET_TOKEN_ERROR.TOKEN_RESPONSE_MISSING_TOKEN})
+    }
   }
-  
 
-  return resultOk({ tokenResponse: json })
+  // TODO: encrypt this
+  const token = json.access_token
+  // Remove token from response so it's not stored raw in local storage:
+  // https://www.rdegges.com/2018/please-stop-using-local-storage/
+  const responseJson = {...json, access_token: undefined}
+  return resultOk({ tokenResponse: responseJson }, token)
 };
 
 export { handler };
