@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.14.0",
-    "@notionhq/client": "1.0.4",
     "@use-it/event-listener": "0.1.7",
     "advanced-css-reset": "^1.2.2",
     "grommet": "^2.23.0",

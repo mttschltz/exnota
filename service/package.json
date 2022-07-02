@@ -5,6 +5,9 @@
   "private": true,
   "scripts": {},
   "dependencies": {
+    "@notionhq/client": "1.0.4",
+    "@types/cookie": "0.5.1",
+    "cookie": "0.5.0",
     "node-fetch": "3.2.6"
   },
   "devDependencies": {

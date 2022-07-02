@@ -27,7 +27,7 @@ interface ConnectService {
     code: string,
     redirectURL: string
   ) => Promise<Result<ExpectedTokenResponse, ConnectServiceError>>;
-  getPages: (token: string) => Promise<Result<Page[], 'error-getting-pages'>>;
+  getPages: () => Promise<Result<Page[], 'error-getting-pages'>>;
 }
 
 interface PageSetResponse {
@@ -91,7 +91,8 @@ const newConnectInteractor = (
         return saveOptionsResult;
       }
 
-      // call get-token and persist
+      // call get-token and persist result
+      // the token itself is saved as a cookie
       log.info('Calling service.getToken: Start');
       const tokenResponseResult = await service.getToken(code, redirectURL);
       log.info('Calling service.getToken: Finish');
@@ -110,20 +111,14 @@ const newConnectInteractor = (
         return saveAuthConfigResult;
       }
 
-      // TODO: Comment out the code below and test the flow
-      // TODO: Check notion response error cases as per connect.ts
-
-      // TODO: Implement getPages
       // call get-pages to find how many pages we have access to
-      // log.info('Calling service.getPages: Start');
-      // const getPagesResult = await service.getPages(
-      //   tokenResponseResult.value.access_token
-      // );
-      // log.info('Calling service.getPages: Finish');
-      // if (!getPagesResult.ok) {
-      //   log.info('Calling service.getPages: Error');
-      //   return getPagesResult;
-      // }
+      log.info('Calling service.getPages: Start');
+      const getPagesResult = await service.getPages();
+      log.info('Calling service.getPages: Finish');
+      if (!getPagesResult.ok) {
+        log.info('Calling service.getPages: Error');
+        return getPagesResult;
+      }
 
       // const pages = getPagesResult.value;
       // if (!pages.length) {

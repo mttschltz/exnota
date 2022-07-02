@@ -8,16 +8,16 @@ const ERROR_COMMON = {
   } as const
 
 // get client id
-const GET_NOTION_CLIENT_ID =  'get-notion-client-id'
-const getClientIdNotionApiPath = () => `${BASE}${GET_NOTION_CLIENT_ID}`
+const GET_NOTION_CLIENT_ID_URI_PART =  'get-notion-client-id'
+const getClientIdNotionApiPath = () => `${BASE}${GET_NOTION_CLIENT_ID_URI_PART}`
 
 interface GetClientIdNotionApiResponse {
     clientId: string
 }
 
 // get token
-const GET_TOKEN =  'get-token'
-const getTokenNotionApiPath = () => `${BASE}${GET_TOKEN}`
+const GET_TOKEN_URI_PART =  'get-token'
+const getTokenNotionApiPath = () => `${BASE}${GET_TOKEN_URI_PART}`
 
 interface GetTokenNotionApiSuccessResponse {
     tokenResponse: any
@@ -45,11 +45,32 @@ const GET_TOKEN_ERROR = {...ERROR_COMMON,
     TOKEN_RESPONSE_MISSING_TOKEN: 'token-response-missing-token',
 } as const
 
+// get pages
+const GET_PAGES_URI_PART =  'get-pages'
+const getPagesNotionApiPath = () => `${BASE}${GET_PAGES_URI_PART}`
+
+interface GetPagesNotionApiSuccessResponse {
+    pages: {
+        id: string
+        name: string
+    }[]
+}
+
+const GET_PAGES_ERROR = {...ERROR_COMMON, 
+    NO_TOKEN: 'api-no-token',
+} as const
+
+interface GetPagesNotionApiErrorResponse {
+    error: typeof GET_PAGES_ERROR[keyof typeof GET_PAGES_ERROR]
+}
+
 export {
-    getClientIdNotionApiPath, getTokenNotionApiPath, GET_TOKEN_ERROR
+    getClientIdNotionApiPath, getTokenNotionApiPath, getPagesNotionApiPath, GET_TOKEN_ERROR, GET_PAGES_ERROR, GET_TOKEN_URI_PART , GET_PAGES_URI_PART , GET_NOTION_CLIENT_ID_URI_PART
 }
 export type {
     GetClientIdNotionApiResponse,
     GetTokenNotionApiSuccessResponse,
     GetTokenNotionApiErrorResponse,
+    GetPagesNotionApiSuccessResponse,
+    GetPagesNotionApiErrorResponse,
 }

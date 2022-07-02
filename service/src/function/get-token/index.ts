@@ -2,29 +2,30 @@ import { Handler } from "@netlify/functions";
 import { GetTokenNotionApiSuccessResponse, GET_TOKEN_ERROR } from "@api/service";
 import fetch from 'node-fetch'
 import type { Response } from 'node-fetch'
+import { addTokenCookie } from "src/helper/token";
+import { createLog } from "src/helper/log";
+import { getTraceIdentifiers } from "src/helper/identifier";
+import { hasAppVersion } from "src/helper/appVersion";
 
 const isNotionError = (json: unknown): json is { error: string } => typeof json === 'object' && json !== null && 'error' in json
 const isTokenResponse = (json: unknown): json is { access_token: string } => typeof json === 'object' && json !== null && 'access_token' in json
 
-
-const HEADER_APP_VERSION = 'x-app-version'
-
-const COOKIE_TOKEN = 'exnota_notiontoken'
-
 const resultOk = (response: GetTokenNotionApiSuccessResponse, token: string) => {
+  // TODO: Add identifier cookies
+  const multiValueHeaders = addTokenCookie(token, {})
   return {
     statusCode: 200,
     body: JSON.stringify(response),
-    headers: {
-      // TODO: Go through steps here: https://www.rdegges.com/2018/please-stop-using-local-storage/
-      'Set-Cookie': `${COOKIE_TOKEN}=${token}; Max-Age=63115200; SameSite=Strict`
-    }
+    multiValueHeaders,
   }
 }
 
 const handler: Handler = async (event, context) => {
-  const headers = event.headers
-  if (!headers[HEADER_APP_VERSION]) {
+  const log = createLog('get-token', { ...getTraceIdentifiers(event.headers)});
+  log.info('Started')
+  
+  if (!hasAppVersion(event.headers)) {
+    log.info('No app version')
     return {
       statusCode: 400,
       body: JSON.stringify({error: GET_TOKEN_ERROR.NO_APP_VERSION})

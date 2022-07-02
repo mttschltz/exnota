@@ -11,7 +11,7 @@ import {
   getClientIdNotionApiPath,
 } from '@api/service';
 import {ConnectRepo, newConnectInteractor} from '@background/usecase/connect';
-import {getToken} from '@background/service/api/auth';
+import {getPages, getToken} from '@background/service/api/auth';
 import {
   AuthConnectMessageResponse,
   AuthGetClientIdMessageResponse,
@@ -22,9 +22,7 @@ const startConnectListener = (repo: ConnectRepo): void => {
   log.info('Creating listener: Start');
 
   const interactor = newConnectInteractor(repo, {
-    // TODO:
-    getPages: () =>
-      Promise.resolve(resultError('Not implemented', 'error-getting-pages')),
+    getPages,
     getToken,
   });
 
