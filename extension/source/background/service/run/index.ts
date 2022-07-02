@@ -8,7 +8,7 @@ import {
 } from '@background/service/message/auth';
 import * as localforage from 'localforage';
 import {local as localDriver} from 'localforage-webextensionstorage-driver';
-import {resultError} from '@lib/result';
+import {newOptionsRepo} from '@background/repo/options';
 
 const log = createLog('background', 'Index');
 
@@ -25,6 +25,7 @@ browser.runtime.onInstalled.addListener((): void => {
     driver: 'webExtensionLocalStorage',
   });
   const authRepo = newAuthRepo(extensionStorage);
+  const optionsRepo = newOptionsRepo(extensionStorage);
 
   log.info('Starting get client ID listener');
   startGetClientIdListener();
@@ -33,6 +34,6 @@ browser.runtime.onInstalled.addListener((): void => {
   startConnectListener({
     getAuthConfig: authRepo.getConfig,
     saveAuthConfig: authRepo.saveConfig,
-    saveOptionsConfig: () => Promise.resolve(resultError('', 'error')),
+    saveOptionsConfig: optionsRepo.saveConfig,
   });
 })();

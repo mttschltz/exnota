@@ -52,7 +52,7 @@ const getPagesNotionApiPath = () => `${BASE}${GET_PAGES_URI_PART}`
 interface GetPagesNotionApiSuccessResponse {
     pages: {
         id: string
-        name: string
+        title: string
     }[]
 }
 

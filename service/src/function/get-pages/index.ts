@@ -85,7 +85,7 @@ const handler: Handler = async (event, context) => {
       }
       pages.push({
         id: page.id,
-        name: title,
+        title,
       })
     })
   }
@@ -96,7 +96,7 @@ const handler: Handler = async (event, context) => {
   
   log.info('Finished')
   return resultOk({
-    pages: pages
+    pages,
   })
 };
 

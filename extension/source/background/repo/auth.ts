@@ -2,10 +2,7 @@ import {createLog, unknownError} from '@lib/log';
 import {resultError, resultOk} from '@lib/result';
 import {AuthConfigRepo} from '@background/repo';
 import {AuthConfig, isAuthConfig, newAuthConfig} from '@background/authConfig';
-
-const REPO_KEY = Object.freeze({
-  AUTH_CONFIG: 'auth',
-});
+import {REPO_KEY} from './config';
 
 const AUTH_REPO_KEY = Object.freeze({
   CODE: 'code',

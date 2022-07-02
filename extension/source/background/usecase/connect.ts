@@ -1,5 +1,5 @@
 import {createLog} from '@lib/log';
-import {FunctionError, Result, resultOk} from '@lib/result';
+import {FunctionError, Result, resultError, resultOk} from '@lib/result';
 import {
   AuthConfigRepo,
   ExpectedTokenResponse,
@@ -7,6 +7,7 @@ import {
 } from '@background/repo';
 import {Page} from '@background/page';
 import {newAuthConfig} from '@background/authConfig';
+import {newOptionsConfig} from '@background/optionsConfig';
 
 type ConnectServiceError = 'error-getting-token' | 'error-getting-pages';
 
@@ -120,33 +121,32 @@ const newConnectInteractor = (
         return getPagesResult;
       }
 
-      // const pages = getPagesResult.value;
-      // if (!pages.length) {
-      //   log.info('No pages granted access');
-      //   return resultError('No pages granted access', 'no-pages-granted');
-      // }
+      const pages = getPagesResult.value;
+      if (!pages.length) {
+        log.info('No pages granted access');
+        return resultError('No pages granted access', 'no-pages-granted');
+      }
 
-      // if (pages.length > 1) {
-      //   log.info('More than one page granted access');
-      //   const response: MultiplePagesResponse = {
-      //     status: 'multiple-pages',
-      //     pages,
-      //   };
-      //   return resultOk(response);
-      // }
+      if (pages.length > 1) {
+        log.info('More than one page granted access');
+        const response: MultiplePagesResponse = {
+          status: 'multiple-pages',
+          pages,
+        };
+        return resultOk(response);
+      }
 
-      // // Create new options config as the page is currently the only property
-      // const optionsConfig = newOptionsConfig(pages[0]);
+      // Create new options config as the page is currently the only property
+      const optionsConfig = newOptionsConfig(pages[0]);
 
-      // // TODO: Save and implement saveOptionsConfig
-      // // persist page to options
-      // log.info('Calling repo.saveOptionsConfig: Start');
-      // const saveAuthResult = await repo.saveOptionsConfig(optionsConfig);
-      // log.info('Calling repo.saveOptionsConfig: Finish');
-      // if (!saveAuthResult.ok) {
-      //   log.info('Calling repo.saveOptionsConfig: Error', saveAuthResult);
-      //   return saveAuthResult;
-      // }
+      // persist page to options
+      log.info('Calling repo.saveOptionsConfig: Start');
+      const saveAuthResult = await repo.saveOptionsConfig(optionsConfig);
+      log.info('Calling repo.saveOptionsConfig: Finish');
+      if (!saveAuthResult.ok) {
+        log.info('Calling repo.saveOptionsConfig: Error', saveAuthResult);
+        return saveAuthResult;
+      }
 
       log.info('One page granted access');
       const response: PageSetResponse = {

@@ -2,38 +2,38 @@ import {Result, resultError, resultOk} from '@lib/result';
 
 interface Page {
   id: string;
-  name: string;
+  title: string;
 }
 
-type PageError = 'invalid-id' | 'missing-name';
+type PageError = 'invalid-id' | 'missing-title';
 
 class PageImpl implements Page {
   _id: string;
 
-  _name: string;
+  _title: string;
 
-  public constructor(id: string, name: string) {
+  public constructor(id: string, title: string) {
     this._id = id;
-    this._name = name;
+    this._title = title;
   }
 
   public get id(): string {
     return this._id;
   }
 
-  public get name(): string {
-    return this._name;
+  public get title(): string {
+    return this._title;
   }
 }
 
-const newPage = (id: string, name: string): Result<Page, PageError> => {
+const newPage = (id: string, title: string): Result<Page, PageError> => {
   if (!id) {
     return resultError('Missing id', 'invalid-id', undefined, {id});
   }
-  if (!name) {
-    return resultError('Missing name', 'missing-name', undefined, {id});
+  if (!title) {
+    return resultError('Missing title', 'missing-title', undefined, {id});
   }
-  return resultOk(new PageImpl(id, name));
+  return resultOk(new PageImpl(id, title));
 };
 
 export type {Page};
