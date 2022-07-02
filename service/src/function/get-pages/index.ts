@@ -1,4 +1,4 @@
-import { GetPagesNotionApiSuccessResponse, GET_PAGES_ERROR, GET_TOKEN_ERROR } from "@api/service";
+import { GetPagesNotionApiErrorResponse, GetPagesNotionApiSuccessResponse, GET_PAGES_ERROR, GET_TOKEN_ERROR } from "@api/service";
 import { Handler } from "@netlify/functions";
 import { Client } from '@notionhq/client'
 import { hasAppVersion } from "src/helper/appVersion";
@@ -13,25 +13,26 @@ const resultOk = (response: GetPagesNotionApiSuccessResponse) => {
   }
 }
 
+const resultError = (response: GetPagesNotionApiErrorResponse) => {
+  return {
+    statusCode: 400,
+    body: JSON.stringify(response),
+  }
+}
+
 const handler: Handler = async (event, context) => {
   const log = createLog('get-pages', { ...getTraceIdentifiers(event.headers)});
   log.info('Started')
 
   if (!hasAppVersion(event.headers)) {
     log.info('No app version')
-    return {
-      statusCode: 400,
-      body: JSON.stringify({error: GET_TOKEN_ERROR.NO_APP_VERSION})
-    }
+    return resultError({error: GET_TOKEN_ERROR.NO_APP_VERSION})
   }
   
   const token = getToken(event.headers)
   if (!token) {
     log.info('No token')
-    return {
-      statusCode: 400,
-      body: JSON.stringify({error: GET_PAGES_ERROR.NO_TOKEN})
-    }
+    return resultError({error: GET_PAGES_ERROR.NO_TOKEN})
   }
 
   const notion = new Client({
