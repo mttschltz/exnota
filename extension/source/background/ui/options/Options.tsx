@@ -134,6 +134,7 @@ const useConnectStep2Screen = (): ConnectStep2Screen => {
         switch (connectResult.errorType) {
           case 'no-pages-granted':
             // TODO: handle this
+            setError(t('setup:connect.step2_no_pages'));
             break;
           default:
             setError(

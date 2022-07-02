@@ -20,6 +20,7 @@
     "connect.step2_give_acess": "Give access",
     "connect.step2_try_again": "Try again",
     "connect.step2_clientid_error": "Couldn't connect to our servers (Error code: {{code}})",
-    "connect.step2_denied_access": "You didn't appear to give Exnota access, which it needs to save highlights :( Please try again.",
+    "connect.step2_denied_access": "Seems like you didn't give Exnota access, which it needs to save highlights :( Please try again.",
+    "connect.step2_no_pages": "Exnota didn't get access to any pages. Please try again. Choose at least one page - databases aren't supported yet.",
     "connect.step2_generic_error": "That didn't work, please try again (Error code: {{code}})"
 }
