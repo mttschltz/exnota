@@ -54,10 +54,15 @@ interface GetConnectionState {
     | ConnectStartScreen
     | ConnectStep1Screen
     | ConnectStep2Screen
+    | ConnectSelectPageScreen
     | null;
 }
 
-type ScreenType = 'connect-start' | 'connect-step1' | 'connect-step2';
+type ScreenType =
+  | 'connect-start'
+  | 'connect-step1'
+  | 'connect-step2'
+  | 'connect-select-page';
 
 interface ConnectStartScreen {
   readonly __type: 'connect-start';
@@ -73,8 +78,16 @@ interface ConnectStep2Screen {
   readonly giveAccess: () => void;
   readonly error?: string;
 }
+interface ConnectSelectPageScreen {
+  readonly __type: 'connect-select-page';
+  readonly selecting: boolean;
+  readonly selectPage: (id: string) => void;
+  readonly error?: string;
+}
 
-const useConnectStep2Screen = (): ConnectStep2Screen => {
+const useConnectStep2Screen = (
+  setScreenType: React.Dispatch<React.SetStateAction<ScreenType | null>>
+): ConnectStep2Screen => {
   const [error, setError] = useState<string | undefined>(undefined);
   const [connecting, setConnecting] = useState(false);
   const t = useTranslate(['setup']);
@@ -149,11 +162,12 @@ const useConnectStep2Screen = (): ConnectStep2Screen => {
       }
 
       setConnecting(false);
+      setScreenType('connect-select-page');
     } catch {
       setError(t('setup:connect.step2_denied_access'));
       setConnecting(false);
     }
-  }, [t]);
+  }, [setScreenType, t]);
 
   const screen: ConnectStep2Screen = useMemo(() => {
     return {
@@ -164,6 +178,17 @@ const useConnectStep2Screen = (): ConnectStep2Screen => {
     };
   }, [connecting, error, giveAccess]);
 
+  return screen;
+};
+
+const useConnectSelectPageScreen = (): ConnectSelectPageScreen => {
+  const screen: ConnectSelectPageScreen = useMemo(() => {
+    return {
+      __type: 'connect-select-page',
+      selecting: false,
+      selectPage: (): void => {},
+    };
+  }, []);
   return screen;
 };
 
@@ -193,8 +218,8 @@ const useGetConnectionState = (): GetConnectionState => {
     }),
     []
   );
-
-  const connectStep2Screen = useConnectStep2Screen();
+  const connectStep2Screen = useConnectStep2Screen(setScreenType);
+  const connectSelectPageScreen = useConnectSelectPageScreen();
 
   // Update screen type on state change
   useEffect(() => {
@@ -219,10 +244,19 @@ const useGetConnectionState = (): GetConnectionState => {
       case 'connect-step2':
         setScreen(connectStep2Screen);
         break;
+      case 'connect-select-page':
+        setScreen(connectSelectPageScreen);
+        break;
       default:
         break;
     }
-  }, [screenType, connectStartScreen, connectStep1Screen, connectStep2Screen]);
+  }, [
+    screenType,
+    connectStartScreen,
+    connectStep1Screen,
+    connectStep2Screen,
+    connectSelectPageScreen,
+  ]);
 
   // TODO: Get state from message API
   // useEffect(() => {
@@ -367,9 +401,41 @@ const Options: React.FC = () => {
                     label={
                       connectionState.screen.connecting
                         ? t('setup:connect.step2_try_again')
-                        : t('setup:connect.step2_give_acess')
+                        : t('setup:connect.step2_give_access')
                     }
                     onClick={connectionState.screen.giveAccess}
+                  />
+                </Box>
+              </div>
+            )}
+          {!connectionState.loading &&
+            connectionState.screen?.__type === 'connect-select-page' && (
+              // Using Box instead of div causes margins to not collapse
+              <div>
+                <StepHeading heading="setup:connect.select_page_heading" />
+                <Paragraph>
+                  {t('setup:connect.select_page_description')}
+                </Paragraph>
+                {connectionState.screen.error && (
+                  <Paragraph color="status-critical">
+                    {connectionState.screen.error}
+                  </Paragraph>
+                )}
+                {/* TODO: Add scrollable radio button group with all pages */}
+                <Box justify="end" align="center" gap="xsmall" direction="row">
+                  {connectionState.screen.selecting && <Spinner />}
+                  <Button
+                    primary
+                    label={
+                      connectionState.screen.selecting
+                        ? t('setup:connect.select_page_try_again')
+                        : t('setup:connect.select_page_finish')
+                    }
+                    onClick={connectionState.screen.selectPage.bind(
+                      null,
+                      // TODO: Update to use the page ID (may want to save in state)
+                      'fake id'
+                    )}
                   />
                 </Box>
               </div>

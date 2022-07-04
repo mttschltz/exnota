@@ -17,10 +17,14 @@
     "connect.step1_confirm": "I have a page ready",
     "connect.step2_heading": "Step 2 of 2: Give access",
     "connect.step2_description": "Click {1}Give access{2} to open a window where Notion allows you to give Exnota access to the page where it should save highlights to.",
-    "connect.step2_give_acess": "Give access",
+    "connect.step2_give_access": "Give access",
     "connect.step2_try_again": "Try again",
     "connect.step2_clientid_error": "Couldn't connect to our servers (Error code: {{code}})",
     "connect.step2_denied_access": "Seems like you didn't give Exnota access, which it needs to save highlights :( Please try again.",
     "connect.step2_no_pages": "Exnota didn't get access to any pages. Please try again. Choose at least one page - databases aren't supported yet.",
-    "connect.step2_generic_error": "That didn't work, please try again (Error code: {{code}})"
+    "connect.step2_generic_error": "That didn't work, please try again (Error code: {{code}})",
+    "connect.select_page_heading": "Which of these pages should Exnota save to?",
+    "connect.select_page_description": "You gave Exnota access to more than one page, lucky us! Which should we use?",
+    "connect.select_page_finish": "Finish",
+    "connect.select_page_try_again": "Try again"
 }
