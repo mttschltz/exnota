@@ -62,8 +62,8 @@ const getPages: ConnectService['getPages'] = async () => {
     }
   } catch (e) {
     if (isErrorish(e)) {
-      log.info('Calling notionGetPages: Error');
-      return serializeResult(resultError(e.name, 'error-getting-pages'));
+      log.info('Calling notionGetPages: Error', e);
+      return serializeResult(resultError(e.name, 'error-getting-pages', e));
     }
     log.info('Calling notionGetPages: Error');
     return serializeResult(
