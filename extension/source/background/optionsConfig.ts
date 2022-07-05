@@ -2,6 +2,7 @@ import {Page} from './page';
 
 interface OptionsConfig {
   page: Page;
+  readonly setPage: (page: Page) => void;
 }
 
 class OptionsConfigImpl implements OptionsConfig {
@@ -13,6 +14,10 @@ class OptionsConfigImpl implements OptionsConfig {
 
   public get page(): Page {
     return this._page;
+  }
+
+  public setPage(page: Page): void {
+    this._page = page;
   }
 }
 

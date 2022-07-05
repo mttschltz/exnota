@@ -58,18 +58,14 @@ const newConnectInteractor = (
       code,
       redirectURL
     ): Promise<Result<ConnectResponse, ConnectError>> {
-      // TODO: Complete all dependencies
-      // TODO: Add message that calls this
-      // TODO: Test all cases
-
       // get auth config
-      log.info('Calling repo.getConfig: Start');
+      log.info('Calling repo.getAuthConfig: Start');
       const authConfigResult = await repo.getAuthConfig();
       if (!authConfigResult.ok) {
         return authConfigResult;
       }
       let authConfig = authConfigResult.value;
-      log.info('Calling repo.getConfig: Finish');
+      log.info('Calling repo.getAuthConfig: Finish');
 
       if (authConfig) {
         authConfig.code = code;
@@ -85,11 +81,11 @@ const newConnectInteractor = (
 
       // persist code immediately as we don't have transactions
       log.info('Calling repo.saveAuthConfig: Start');
-      const saveOptionsResult = await repo.saveAuthConfig(authConfig);
+      const saveAuthCodeResult = await repo.saveAuthConfig(authConfig);
       log.info('Calling repo.saveAuthConfig: Finish');
-      if (!saveOptionsResult.ok) {
-        log.info('Calling repo.saveAuthConfig: Error', saveOptionsResult);
-        return saveOptionsResult;
+      if (!saveAuthCodeResult.ok) {
+        log.info('Calling repo.saveAuthConfig: Error', saveAuthCodeResult);
+        return saveAuthCodeResult;
       }
 
       // call get-token and persist result

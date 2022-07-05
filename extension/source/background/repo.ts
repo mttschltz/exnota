@@ -26,6 +26,12 @@ interface OptionsConfigRepo {
       RepoStorageSetError | FunctionResultError<typeof newOptionsConfig>
     >
   >;
+  readonly getConfig: () => Promise<
+    Result<
+      OptionsConfig | undefined,
+      RepoStorageGetError | FunctionResultError<typeof newOptionsConfig>
+    >
+  >;
 }
 
 export type {AuthConfigRepo, OptionsConfigRepo, ExpectedTokenResponse};

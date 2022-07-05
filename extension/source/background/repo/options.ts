@@ -9,6 +9,7 @@ const OPTIONS_REPO_KEY = Object.freeze({
 });
 
 const newOptionsRepo = (storage: LocalForage): OptionsConfigRepo => {
+  // TODO: Implement
   // const getConfig: AuthConfigRepo['getConfig'] = async () => {
   //   const log = createLog('background', 'GetConfigAuthRepo');
   //   try {
