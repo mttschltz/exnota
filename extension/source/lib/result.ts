@@ -226,10 +226,32 @@ type AsyncReturnResultError<T extends (...args: any) => Promise<any>> = Awaited<
  *
  * () => Result<any, ErrorType>
  */
-type FunctionError<T extends (...args: any) => any> =
+type FunctionResultError<T extends (...args: any) => any> =
   ReturnType<T> extends Promise<any>
     ? AsyncReturnResultError<T>
     : ReturnResultError<T>;
+
+type ReturnResultValue<T extends (...args: any) => any> =
+  ReturnType<T> extends Result<infer X, any> ? X : never;
+type AsyncReturnResultValue<T extends (...args: any) => Promise<any>> = Awaited<
+  ReturnType<T>
+> extends Result<infer X, any>
+  ? X
+  : never;
+
+/**
+ * Get the value type of a function that returns a result, or a promise that returns a result. E.g.
+ *
+ * () => Promise<Result<ValueType, any>>
+ *
+ * or
+ *
+ * () => Result<ValueType, any>
+ */
+type FunctionResultValue<T extends (...args: any) => any> =
+  ReturnType<T> extends Promise<any>
+    ? AsyncReturnResultValue<T>
+    : ReturnResultValue<T>;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export type {
@@ -238,7 +260,8 @@ export type {
   ResultOk,
   Results,
   ResultMetadata,
-  FunctionError,
+  FunctionResultError,
+  FunctionResultValue,
 };
 export {
   resultOk,

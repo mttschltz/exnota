@@ -3,7 +3,7 @@ import {
   Grommet,
   Image,
   Heading,
-  Page,
+  Page as GrommetPage,
   PageContent,
   Box,
   Header,
@@ -12,12 +12,14 @@ import {
   Button,
   Text,
   Anchor,
+  RadioButtonGroup,
 } from 'grommet';
 import {browser} from 'webextension-polyfill-ts';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {hpe} from 'grommet-theme-hpe';
 import {useTranslate, Translate} from '@background/ui/i18n/i18n';
 import {connect, getClientId} from '@background/service/message/auth';
+import {Page} from '@background/page';
 
 const ErrorWithDetails: React.FC<{
   message: string;
@@ -80,13 +82,19 @@ interface ConnectStep2Screen {
 }
 interface ConnectSelectPageScreen {
   readonly __type: 'connect-select-page';
+  readonly pages: Page[];
   readonly selecting: boolean;
-  readonly selectPage: (id: string) => void;
+  readonly selectedPageId: string | undefined;
+  readonly setSelectedPage: (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => void;
+  readonly save: () => void;
   readonly error?: string;
 }
 
 const useConnectStep2Screen = (
-  setScreenType: React.Dispatch<React.SetStateAction<ScreenType | null>>
+  setScreenType: React.Dispatch<React.SetStateAction<ScreenType | null>>,
+  setPages: React.Dispatch<React.SetStateAction<Page[]>>
 ): ConnectStep2Screen => {
   const [error, setError] = useState<string | undefined>(undefined);
   const [connecting, setConnecting] = useState(false);
@@ -162,12 +170,21 @@ const useConnectStep2Screen = (
       }
 
       setConnecting(false);
-      setScreenType('connect-select-page');
+      if (connectResult.value.status === 'page-set') {
+        // TODO:
+      } else if (connectResult.value.status === 'multiple-pages') {
+        setPages(
+          connectResult.value.pages.sort((a, b) =>
+            a.title.localeCompare(b.title)
+          )
+        );
+        setScreenType('connect-select-page');
+      }
     } catch {
       setError(t('setup:connect.step2_denied_access'));
       setConnecting(false);
     }
-  }, [setScreenType, t]);
+  }, [setPages, setScreenType, t]);
 
   const screen: ConnectStep2Screen = useMemo(() => {
     return {
@@ -181,14 +198,30 @@ const useConnectStep2Screen = (
   return screen;
 };
 
-const useConnectSelectPageScreen = (): ConnectSelectPageScreen => {
+const useConnectSelectPageScreen = (pages: Page[]): ConnectSelectPageScreen => {
+  const [selectedPageId, setSelectedPageId] = useState<string | undefined>(
+    pages[0]?.id
+  );
+  useEffect(() => {
+    if (selectedPageId === undefined && pages.length > 0) {
+      console.log(`setSelectedPage(pages[0]);`);
+      setSelectedPageId(pages[0]?.id);
+    }
+  }, [selectedPageId, pages]);
+
   const screen: ConnectSelectPageScreen = useMemo(() => {
     return {
       __type: 'connect-select-page',
       selecting: false,
-      selectPage: (): void => {},
+      pages,
+      selectedPageId,
+      setSelectedPage: (event): void => {
+        setSelectedPageId(event.target.value);
+      },
+      // TODO: call set page message
+      save: (): void => {},
     };
-  }, []);
+  }, [pages, selectedPageId]);
   return screen;
 };
 
@@ -203,6 +236,7 @@ const useGetConnectionState = (): GetConnectionState => {
     null
   );
   const [screenType, setScreenType] = useState<ScreenType | null>(null);
+  const [pages, setPages] = useState<Page[]>([]);
 
   const connectStartScreen: ConnectStartScreen = useMemo(
     () => ({
@@ -218,8 +252,8 @@ const useGetConnectionState = (): GetConnectionState => {
     }),
     []
   );
-  const connectStep2Screen = useConnectStep2Screen(setScreenType);
-  const connectSelectPageScreen = useConnectSelectPageScreen();
+  const connectStep2Screen = useConnectStep2Screen(setScreenType, setPages);
+  const connectSelectPageScreen = useConnectSelectPageScreen(pages);
 
   // Update screen type on state change
   useEffect(() => {
@@ -302,7 +336,7 @@ const Options: React.FC = () => {
 
   return (
     <Grommet theme={hpe}>
-      <Page kind="narrow" pad={{bottom: 'xlarge'}}>
+      <GrommetPage kind="narrow" pad={{bottom: 'xlarge'}}>
         <PageContent>
           <Header justify="center">
             <Box align="center" direction="row" gap="xsmall">
@@ -422,26 +456,38 @@ const Options: React.FC = () => {
                   </Paragraph>
                 )}
                 {/* TODO: Add scrollable radio button group with all pages */}
-                <Box justify="end" align="center" gap="xsmall" direction="row">
-                  {connectionState.screen.selecting && <Spinner />}
-                  <Button
-                    primary
-                    label={
-                      connectionState.screen.selecting
-                        ? t('setup:connect.select_page_try_again')
-                        : t('setup:connect.select_page_finish')
-                    }
-                    onClick={connectionState.screen.selectPage.bind(
-                      null,
-                      // TODO: Update to use the page ID (may want to save in state)
-                      'fake id'
-                    )}
+                <Box
+                  justify="between"
+                  align="center"
+                  gap="xsmall"
+                  direction="row"
+                >
+                  <RadioButtonGroup
+                    name="page"
+                    options={connectionState.screen.pages.map((p) => ({
+                      value: p.id,
+                      label: p.title,
+                    }))}
+                    value={connectionState.screen.selectedPageId}
+                    onChange={connectionState.screen.setSelectedPage}
                   />
+                  <Box>
+                    {connectionState.screen.selecting && <Spinner />}
+                    <Button
+                      primary
+                      label={
+                        connectionState.screen.selecting
+                          ? t('setup:connect.select_page_try_again')
+                          : t('setup:connect.select_page_finish')
+                      }
+                      onClick={connectionState.screen.save}
+                    />
+                  </Box>
                 </Box>
               </div>
             )}
         </PageContent>
-      </Page>
+      </GrommetPage>
     </Grommet>
   );
 };
