@@ -1,9 +1,23 @@
-import {Page} from './page';
+import {isPage, Page} from './page';
 
 interface OptionsConfig {
   page: Page;
   readonly setPage: (page: Page) => void;
 }
+
+const isOptionsConfig = (
+  optionsConfig: unknown
+): optionsConfig is OptionsConfig => {
+  if (typeof optionsConfig !== 'object' || optionsConfig === null) {
+    return false;
+  }
+
+  const page =
+    typeof optionsConfig === 'object'
+      ? (optionsConfig as Partial<OptionsConfig>)?.page
+      : undefined;
+  return isPage(page);
+};
 
 class OptionsConfigImpl implements OptionsConfig {
   _page: Page;
@@ -26,4 +40,4 @@ const newOptionsConfig = (page: Page): OptionsConfig => {
 };
 
 export type {OptionsConfig};
-export {newOptionsConfig};
+export {isOptionsConfig, newOptionsConfig};

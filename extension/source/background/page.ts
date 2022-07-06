@@ -7,6 +7,15 @@ interface Page {
 
 type PageError = 'invalid-id' | 'missing-title';
 
+const isPage = (page: unknown): page is Page => {
+  if (typeof page !== 'object' || page === null) {
+    return false;
+  }
+
+  const result = newPage((page as Page)?.id, (page as Page)?.title);
+  return result.ok;
+};
+
 class PageImpl implements Page {
   _id: string;
 
@@ -27,14 +36,14 @@ class PageImpl implements Page {
 }
 
 const newPage = (id: string, title: string): Result<Page, PageError> => {
-  if (!id) {
+  if (!id || typeof id !== 'string') {
     return resultError('Missing id', 'invalid-id', undefined, {id});
   }
-  if (!title) {
+  if (!title || typeof title !== 'string') {
     return resultError('Missing title', 'missing-title', undefined, {id});
   }
   return resultOk(new PageImpl(id, title));
 };
 
 export type {Page};
-export {newPage};
+export {newPage, isPage};

@@ -1,7 +1,11 @@
 import {createLog, unknownError} from '@lib/log';
 import {resultError, resultOk} from '@lib/result';
 import {OptionsConfigRepo} from '@background/repo';
-import {OptionsConfig} from '@background/optionsConfig';
+import {
+  isOptionsConfig,
+  newOptionsConfig,
+  OptionsConfig,
+} from '@background/optionsConfig';
 import {REPO_KEY} from './config';
 
 const OPTIONS_REPO_KEY = Object.freeze({
@@ -9,31 +13,27 @@ const OPTIONS_REPO_KEY = Object.freeze({
 });
 
 const newOptionsRepo = (storage: LocalForage): OptionsConfigRepo => {
-  // TODO: Implement
-  // const getConfig: AuthConfigRepo['getConfig'] = async () => {
-  //   const log = createLog('background', 'GetConfigAuthRepo');
-  //   try {
-  //     log.info('Calling storage.getItem: Start');
-  //     const authConfigRaw = await storage.getItem(REPO_KEY.AUTH_CONFIG);
-  //     log.info('Calling storage.getItem: Finish');
+  const getConfig: OptionsConfigRepo['getConfig'] = async () => {
+    const log = createLog('background', 'GetConfigOptionsRepo');
+    try {
+      log.info('Calling storage.getItem: Start');
+      const optionsConfigRaw = await storage.getItem(REPO_KEY.OPTIONS_CONFIG);
+      log.info('Calling storage.getItem: Finish');
 
-  //     if (isAuthConfig(authConfigRaw)) {
-  //       const authConfigResult = newAuthConfig(
-  //         authConfigRaw.code,
-  //         authConfigRaw.tokenResponse
-  //       );
-  //       return authConfigResult;
-  //     }
+      if (isOptionsConfig(optionsConfigRaw)) {
+        const authConfigResult = newOptionsConfig(optionsConfigRaw.page);
+        return resultOk(authConfigResult);
+      }
 
-  //     return resultOk(undefined);
-  //   } catch (e) {
-  //     log.error('Could not get auth config', unknownError(e));
-  //     if (e instanceof Error) {
-  //       return resultError('Could not get auth config', 'storage-get', e);
-  //     }
-  //     return resultError('Could not get auth config', 'storage-get');
-  //   }
-  // };
+      return resultOk(undefined);
+    } catch (e) {
+      log.error('Could not get options config', unknownError(e));
+      if (e instanceof Error) {
+        return resultError('Could not get options config', 'storage-get', e);
+      }
+      return resultError('Could not get options config', 'storage-get');
+    }
+  };
 
   const saveConfig: OptionsConfigRepo['saveConfig'] = async (
     optionsConfig: OptionsConfig
@@ -58,6 +58,7 @@ const newOptionsRepo = (storage: LocalForage): OptionsConfigRepo => {
 
   return {
     saveConfig,
+    getConfig,
   };
 };
 

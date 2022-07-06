@@ -26,7 +26,6 @@ interface SetPageInteractor {
 const newSetPageInteractor = (repo: SetPageRepo): SetPageInteractor => {
   const SetPage: SetPageInteractor = {
     async setPage(id, name) {
-      // TODO: Implement
       // get options config
       log.info('Calling repo.getOptionsConfig: Start');
       const optionsConfigResult = await repo.getOptionsConfig();
@@ -51,7 +50,7 @@ const newSetPageInteractor = (repo: SetPageRepo): SetPageInteractor => {
       log.info('Creating or update options config: Finish');
 
       // persist options
-      log.info('Callingn repo.saveOptionsConfig: Start');
+      log.info('Calling repo.saveOptionsConfig: Start');
       const saveOptionsResult = await repo.saveOptionsConfig(optionsConfig);
       if (!saveOptionsResult.ok) {
         return saveOptionsResult;
