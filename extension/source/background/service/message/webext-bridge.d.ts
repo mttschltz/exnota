@@ -2,17 +2,22 @@ import {ProtocolWithReturn} from 'webext-bridge';
 import type {
   AuthGetClientIdMessageResponse,
   AuthConnectMessageResponse,
-} from './authTypes';
+  OptionsSetPageMessageResponse,
+} from './messageTypes';
 
 declare module 'webext-bridge' {
   export interface ProtocolMap {
-    'notion.getClientId': ProtocolWithReturn<
+    'auth.getClientId': ProtocolWithReturn<
       undefined,
       AuthGetClientIdMessageResponse
     >;
-    'notion.connect': ProtocolWithReturn<
+    'auth.connect': ProtocolWithReturn<
       {code: string; redirectURL: string},
       AuthConnectMessageResponse
+    >;
+    'options.setPage': ProtocolWithReturn<
+      {id: string; title: string},
+      OptionsSetPageMessageResponse
     >;
   }
 }

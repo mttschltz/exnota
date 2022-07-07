@@ -15,10 +15,10 @@ import {getPages, getToken} from '@background/service/api/auth';
 import {
   AuthConnectMessageResponse,
   AuthGetClientIdMessageResponse,
-} from './authTypes';
+} from './messageTypes';
 
 const startConnectListener = (repo: ConnectRepo): void => {
-  const log = createLog('background', 'NotionConnectMessageListener');
+  const log = createLog('background', 'AuthConnectMessageListener');
   log.info('Creating listener: Start');
 
   const interactor = newConnectInteractor(repo, {
@@ -26,7 +26,7 @@ const startConnectListener = (repo: ConnectRepo): void => {
     getToken,
   });
 
-  onMessage('notion.connect', async ({data}) => {
+  onMessage('auth.connect', async ({data}) => {
     log.info('Calling connect interactor: Start');
     const result = await interactor.connect(data.code, data.redirectURL);
     log.info('Calling connect interactor: Finish');
@@ -45,12 +45,12 @@ const connect = async (
   code: string,
   redirectURL: string
 ): Promise<AuthConnectMessageResponse> => {
-  const log = createLog('background', 'NotionConnectMessageSender');
+  const log = createLog('background', 'AuthConnectMessageSender');
 
   try {
     log.info('Sending message: Start');
     const value = await sendMessage(
-      'notion.connect',
+      'auth.connect',
       {code, redirectURL},
       'background'
     );
@@ -59,7 +59,7 @@ const connect = async (
   } catch {
     log.info('Sending message: Error');
     return resultError(
-      'Error sending message via NotionConnectMessageSender',
+      'Error sending message via AuthConnectMessageSender',
       'messaging-error'
     );
   }
@@ -68,7 +68,7 @@ const connect = async (
 const startGetClientIdListener = (): void => {
   const log = createLog('background', 'NotionGetClientIdMessageListener');
 
-  onMessage('notion.getClientId', async () => {
+  onMessage('auth.getClientId', async () => {
     log.info('Calling notionClientId: Start');
     try {
       const response = await fetch(getClientIdNotionApiPath(), {
@@ -120,7 +120,7 @@ const getClientId = async (): Promise<AuthGetClientIdMessageResponse> => {
   try {
     log.info('Sending message: Start');
     const value = await sendMessage(
-      'notion.getClientId',
+      'auth.getClientId',
       undefined,
       'background'
     );
