@@ -1,5 +1,10 @@
 import {createLog} from '@lib/log';
-import {FunctionResultError, Result, resultError, resultOk} from '@lib/result';
+import {
+  Errors,
+  Result,
+  resultError,
+  resultOk,
+} from '@lib/result';
 import {
   AuthConfigRepo,
   ExpectedTokenResponse,
@@ -11,11 +16,10 @@ import {newOptionsConfig} from '@background/optionsConfig';
 
 type ConnectServiceError = 'error-getting-token' | 'error-getting-pages';
 
-type ConnectError =
-  | FunctionResultError<AuthConfigRepo['getConfig']>
-  | FunctionResultError<AuthConfigRepo['saveConfig']>
-  | ConnectServiceError
-  | 'no-pages-granted';
+type ConnectError = Errors<
+  Errors<AuthConfigRepo['getConfig'], AuthConfigRepo['saveConfig']>,
+  Errors<ConnectServiceError, 'no-pages-granted'>
+>;
 
 interface ConnectRepo {
   getAuthConfig: AuthConfigRepo['getConfig'];

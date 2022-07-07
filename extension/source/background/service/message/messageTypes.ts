@@ -1,5 +1,4 @@
-import {FunctionResultValue, Result} from '@lib/result';
-import type {FunctionResultError} from '@lib/result';
+import {Errors, ResultValue, Result} from '@lib/result';
 import {ConnectInteractor, ConnectResponse} from '@background/usecase/connect';
 import {SetPageInteractor} from '@background/usecase/setPage';
 
@@ -9,12 +8,12 @@ type AuthGetClientIdMessageResponse = Result<string, 'fetching-client-id'>;
 
 type AuthConnectMessageResponse = Result<
   ConnectResponse,
-  FunctionResultError<ConnectInteractor['connect']> | MessagingError
+  Errors<ConnectInteractor['connect'], MessagingError>
 >;
 
 type OptionsSetPageMessageResponse = Result<
-  FunctionResultValue<SetPageInteractor['setPage']>,
-  FunctionResultError<SetPageInteractor['setPage']> | MessagingError
+  ResultValue<SetPageInteractor['setPage']>,
+  Errors<SetPageInteractor['setPage'], MessagingError>
 >;
 
 export type {

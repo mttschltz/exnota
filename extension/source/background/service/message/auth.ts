@@ -66,7 +66,7 @@ const connect = async (
 };
 
 const startGetClientIdListener = (): void => {
-  const log = createLog('background', 'NotionGetClientIdMessageListener');
+  const log = createLog('background', 'AuthGetClientIdMessageListener');
 
   onMessage('auth.getClientId', async () => {
     log.info('Calling notionClientId: Start');
@@ -115,7 +115,7 @@ const startGetClientIdListener = (): void => {
 };
 
 const getClientId = async (): Promise<AuthGetClientIdMessageResponse> => {
-  const log = createLog('background', 'NotionGetClientIdMessageSender');
+  const log = createLog('background', 'AuthGetClientIdMessageSender');
 
   try {
     log.info('Sending message: Start');

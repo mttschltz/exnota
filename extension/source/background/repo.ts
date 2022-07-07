@@ -1,4 +1,4 @@
-import {FunctionResultError, Result} from '@lib/result';
+import {Errors, Result} from '@lib/result';
 import {AuthConfig, ExpectedTokenResponse, newAuthConfig} from './authConfig';
 import {newOptionsConfig, OptionsConfig} from './optionsConfig';
 
@@ -9,7 +9,7 @@ interface AuthConfigRepo {
   readonly getConfig: () => Promise<
     Result<
       AuthConfig | undefined,
-      FunctionResultError<typeof newAuthConfig> | RepoStorageGetError
+      Errors<typeof newAuthConfig, RepoStorageGetError>
     >
   >;
   readonly saveConfig: (
@@ -21,15 +21,12 @@ interface OptionsConfigRepo {
   readonly saveConfig: (
     optionsConfig: OptionsConfig
   ) => Promise<
-    Result<
-      void,
-      RepoStorageSetError | FunctionResultError<typeof newOptionsConfig>
-    >
+    Result<void, Errors<RepoStorageSetError, typeof newOptionsConfig>>
   >;
   readonly getConfig: () => Promise<
     Result<
       OptionsConfig | undefined,
-      RepoStorageGetError | FunctionResultError<typeof newOptionsConfig>
+      Errors<RepoStorageGetError, typeof newOptionsConfig>
     >
   >;
 }

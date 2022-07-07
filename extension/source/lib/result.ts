@@ -217,19 +217,31 @@ type AsyncReturnResultError<T extends (...args: any) => Promise<any>> = Awaited<
   ? X
   : never;
 
-/**
- * Get the error type of a function that returns a result, or a promise that returns a result. E.g.
- *
- * () => Promise<Result<any, ErrorType>>
- *
- * or
- *
- * () => Result<any, ErrorType>
- */
 type FunctionResultError<T extends (...args: any) => any> =
   ReturnType<T> extends Promise<any>
     ? AsyncReturnResultError<T>
     : ReturnResultError<T>;
+
+type FunctionResultErrorOrSelf<T> = T extends (...args: any) => any
+  ? FunctionResultError<T>
+  : T;
+
+/**
+ * Get the union of the one or two generic types, either:
+ * - Directly if the type is not a function
+ * - From the returning result, if the type is a function, e.g.
+ *     () => Result<any, ErrorType>
+ * - From the returning async result, if the type is an async function, e.g.
+ *     () => Promise<Result<any, ErrorType>>
+ *
+ * Returns 'never' if the union contains overlapping types, to catch accidentally duplication of
+ * error names.
+ */
+type Errors<T, U = never> = [U] extends never
+  ? FunctionResultErrorOrSelf<T>
+  : FunctionResultErrorOrSelf<T> & FunctionResultErrorOrSelf<U> extends never
+  ? FunctionResultErrorOrSelf<T> | FunctionResultErrorOrSelf<U>
+  : never;
 
 type ReturnResultValue<T extends (...args: any) => any> =
   ReturnType<T> extends Result<infer X, any> ? X : never;
@@ -248,20 +260,20 @@ type AsyncReturnResultValue<T extends (...args: any) => Promise<any>> = Awaited<
  *
  * () => Result<ValueType, any>
  */
-type FunctionResultValue<T extends (...args: any) => any> =
+type ResultValue<T extends (...args: any) => any> =
   ReturnType<T> extends Promise<any>
     ? AsyncReturnResultValue<T>
     : ReturnResultValue<T>;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export type {
+  Errors,
   Result,
   ResultError,
   ResultOk,
   Results,
   ResultMetadata,
-  FunctionResultError,
-  FunctionResultValue,
+  ResultValue,
 };
 export {
   resultOk,

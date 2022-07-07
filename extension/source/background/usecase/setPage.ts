@@ -1,13 +1,13 @@
 import {createLog} from '@lib/log';
-import {FunctionResultError, Result, resultOk} from '@lib/result';
+import {Errors, Result, resultOk} from '@lib/result';
 import {OptionsConfigRepo} from '@background/repo';
 import {newOptionsConfig, OptionsConfig} from '@background/optionsConfig';
 import {newPage} from '@background/page';
 
-type SetPageError =
-  | FunctionResultError<OptionsConfigRepo['getConfig']>
-  | FunctionResultError<OptionsConfigRepo['saveConfig']>
-  | FunctionResultError<typeof newPage>;
+type SetPageError = Errors<
+  typeof newPage,
+  Errors<OptionsConfigRepo['getConfig'], OptionsConfigRepo['saveConfig']>
+>;
 
 interface SetPageRepo {
   saveOptionsConfig: OptionsConfigRepo['saveConfig'];
