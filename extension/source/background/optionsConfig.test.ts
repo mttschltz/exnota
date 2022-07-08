@@ -1,7 +1,16 @@
-import {isOptionsConfig} from './optionsConfig';
-import {isPage, Page} from './page';
+import {assertResultOk} from '@lib/testing';
+import {isOptionsConfig, newOptionsConfig} from './optionsConfig';
+import {isPage, newPage, Page} from './page';
 
-jest.mock('./page');
+// jest.mock('./page');
+
+jest.mock('./page', () => {
+  const original = jest.requireActual('./page');
+  return {
+    ...original,
+    isPage: jest.fn(),
+  };
+});
 
 describe('isOptionsConfig', () => {
   let isPageMock: jest.MockedFunction<typeof isPage>;
@@ -12,12 +21,16 @@ describe('isOptionsConfig', () => {
   describe('Given an options config with a valid page', () => {
     beforeEach(() => {
       isPageMock.mockReturnValueOnce(true);
+      isPageMock.mockReturnValueOnce(true);
     });
     afterEach(() => {
       isPageMock.mockReset();
     });
     describe('When called', () => {
       test('Then it returns true', () => {
+        const pageResult = newPage('id', 'title');
+        assertResultOk(pageResult);
+        expect(isOptionsConfig(newOptionsConfig(pageResult.value))).toBe(true);
         expect(
           isOptionsConfig({page: {id: 'the id', title: 'the title'} as Page})
         ).toBe(true);
@@ -32,7 +45,7 @@ describe('isOptionsConfig', () => {
       isPageMock.mockReset();
     });
     describe('When called', () => {
-      test('Then it returns true', () => {
+      test('Then it returns false', () => {
         expect(
           isOptionsConfig({page: {id: 'the id', title: 'the title'} as Page})
         ).toBe(false);

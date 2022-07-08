@@ -9,6 +9,7 @@ import {
 import * as localforage from 'localforage';
 import {local as localDriver} from 'localforage-webextensionstorage-driver';
 import {newOptionsRepo} from '@background/repo/options';
+import {startSetPageListener} from '@background/service/message/options';
 
 const log = createLog('background', 'Index');
 
@@ -34,6 +35,12 @@ browser.runtime.onInstalled.addListener((): void => {
   startConnectListener({
     getAuthConfig: authRepo.getConfig,
     saveAuthConfig: authRepo.saveConfig,
+    saveOptionsConfig: optionsRepo.saveConfig,
+  });
+
+  log.info('Starting set page listener');
+  startSetPageListener({
+    getOptionsConfig: optionsRepo.getConfig,
     saveOptionsConfig: optionsRepo.saveConfig,
   });
 })();

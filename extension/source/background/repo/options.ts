@@ -1,11 +1,9 @@
 import {createLog, unknownError} from '@lib/log';
 import {resultError, resultOk} from '@lib/result';
 import {OptionsConfigRepo} from '@background/repo';
-import {
-  isOptionsConfig,
-  newOptionsConfig,
-  OptionsConfig,
-} from '@background/optionsConfig';
+import {newOptionsConfig, OptionsConfig} from '@background/optionsConfig';
+import {newPage} from '@background/page';
+import {has} from '@lib/type';
 import {REPO_KEY} from './config';
 
 const OPTIONS_REPO_KEY = Object.freeze({
@@ -20,11 +18,31 @@ const newOptionsRepo = (storage: LocalForage): OptionsConfigRepo => {
       const optionsConfigRaw = await storage.getItem(REPO_KEY.OPTIONS_CONFIG);
       log.info('Calling storage.getItem: Finish');
 
-      if (isOptionsConfig(optionsConfigRaw)) {
-        const authConfigResult = newOptionsConfig(optionsConfigRaw.page);
-        return resultOk(authConfigResult);
+      if (optionsConfigRaw === null || optionsConfigRaw === undefined) {
+        log.info('Options config not found in storage');
+        return resultOk(undefined);
       }
 
+      if (has(optionsConfigRaw, 'page')) {
+        const {page} = optionsConfigRaw;
+        let id: string | undefined;
+        if (has(page, 'id') && typeof page.id === 'string') {
+          id = page.id;
+        }
+        let title: string | undefined;
+        if (has(page, 'title') && typeof page.title === 'string') {
+          title = page.title;
+        }
+        if (id && title) {
+          const pageResult = newPage(id, title);
+          if (pageResult.ok) {
+            log.info('Options config constructed from storage');
+            return resultOk(newOptionsConfig(pageResult.value));
+          }
+        }
+      }
+
+      log.info('Options config could not be constructed from storage');
       return resultOk(undefined);
     } catch (e) {
       log.error('Could not get options config', unknownError(e));
@@ -42,7 +60,10 @@ const newOptionsRepo = (storage: LocalForage): OptionsConfigRepo => {
     try {
       log.info('Calling storage.setItem: Start');
       await storage.setItem(REPO_KEY.OPTIONS_CONFIG, {
-        [OPTIONS_REPO_KEY.PAGE]: optionsConfig.page,
+        [OPTIONS_REPO_KEY.PAGE]: {
+          id: optionsConfig.page.id,
+          title: optionsConfig.page.title,
+        },
       });
       log.info('Calling storage.setItem: Finish');
 

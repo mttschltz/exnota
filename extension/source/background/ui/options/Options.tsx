@@ -20,6 +20,7 @@ import {hpe} from 'grommet-theme-hpe';
 import {useTranslate, Translate} from '@background/ui/i18n/i18n';
 import {connect, getClientId} from '@background/service/message/auth';
 import {Page} from '@background/page';
+import {setPage} from '@background/service/message/options';
 
 const ErrorWithDetails: React.FC<{
   message: string;
@@ -88,7 +89,7 @@ interface ConnectSelectPageScreen {
   readonly setSelectedPage: (
     event: React.ChangeEvent<HTMLInputElement>
   ) => void;
-  readonly save: () => void;
+  readonly save: () => Promise<void>;
   readonly error?: string;
 }
 
@@ -199,12 +200,15 @@ const useConnectStep2Screen = (
 };
 
 const useConnectSelectPageScreen = (pages: Page[]): ConnectSelectPageScreen => {
+  const [selecting, setSelecting] = useState(false);
   const [selectedPageId, setSelectedPageId] = useState<string | undefined>(
     pages[0]?.id
   );
+  const [error, setError] = useState<string | undefined>(undefined);
+  const t = useTranslate(['setup']);
+
   useEffect(() => {
     if (selectedPageId === undefined && pages.length > 0) {
-      console.log(`setSelectedPage(pages[0]);`);
       setSelectedPageId(pages[0]?.id);
     }
   }, [selectedPageId, pages]);
@@ -212,16 +216,36 @@ const useConnectSelectPageScreen = (pages: Page[]): ConnectSelectPageScreen => {
   const screen: ConnectSelectPageScreen = useMemo(() => {
     return {
       __type: 'connect-select-page',
-      selecting: false,
+      selecting,
       pages,
       selectedPageId,
       setSelectedPage: (event): void => {
         setSelectedPageId(event.target.value);
       },
-      // TODO: call set page message
-      save: (): void => {},
+      error,
+      save: async (): Promise<void> => {
+        setSelecting(true);
+        const title = pages.find((p) => p.id === selectedPageId)?.title;
+
+        if (!title || !selectedPageId) {
+          setSelecting(false);
+          setError(t('setup:connect.select_page_generic_error'));
+          return;
+        }
+
+        const result = await setPage(selectedPageId, title);
+        if (!result.ok) {
+          setSelecting(false);
+          setError(
+            t('setup:connect.step2_generic_error', {
+              code: result.errorType,
+            })
+          );
+        }
+        // TODO: Next screen
+      },
     };
-  }, [pages, selectedPageId]);
+  }, [error, pages, selectedPageId, selecting, t]);
   return screen;
 };
 
@@ -471,7 +495,7 @@ const Options: React.FC = () => {
                     value={connectionState.screen.selectedPageId}
                     onChange={connectionState.screen.setSelectedPage}
                   />
-                  <Box>
+                  <Box direction="row">
                     {connectionState.screen.selecting && <Spinner />}
                     <Button
                       primary

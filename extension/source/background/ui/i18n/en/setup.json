@@ -26,5 +26,7 @@
     "connect.select_page_heading": "Which of these pages should Exnota save to?",
     "connect.select_page_description": "You gave Exnota access to more than one page, lucky us! Which should we use?",
     "connect.select_page_finish": "Finish",
-    "connect.select_page_try_again": "Try again"
+    "connect.select_page_try_again": "Try again",
+    "connect.select_page_generic_error_with_code": "That didn't work, please try again (Error code: {{code}})",
+    "connect.select_page_generic_error": "That didn't work, please try again."
 }

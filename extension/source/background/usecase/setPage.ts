@@ -55,7 +55,7 @@ const newSetPageInteractor = (repo: SetPageRepo): SetPageInteractor => {
       if (!saveOptionsResult.ok) {
         return saveOptionsResult;
       }
-      log.info('Callingn repo.saveOptionsConfig: Finish');
+      log.info('Calling repo.saveOptionsConfig: Finish');
 
       return resultOk(undefined);
     },
