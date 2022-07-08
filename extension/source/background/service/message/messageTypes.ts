@@ -4,7 +4,10 @@ import {SetPageInteractor} from '@background/usecase/setPage';
 
 type MessagingError = 'messaging-error';
 
-type AuthGetClientIdMessageResponse = Result<string, 'fetching-client-id'>;
+type AuthGetClientIdMessageResponse = Result<
+  string,
+  Errors<MessagingError, 'fetching-client-id'>
+>;
 
 type AuthConnectMessageResponse = Result<
   ConnectResponse,

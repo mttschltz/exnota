@@ -10,11 +10,16 @@ import {
   GetClientIdNotionApiResponse,
   getClientIdNotionApiPath,
 } from '@api/service';
-import {ConnectRepo, newConnectInteractor} from '@background/usecase/connect';
+import {
+  ConnectRepo,
+  ConnectResponse,
+  newConnectInteractor,
+} from '@background/usecase/connect';
 import {getPages, getToken} from '@background/service/api/auth';
 import {
   AuthConnectMessageResponse,
   AuthGetClientIdMessageResponse,
+  MessagingError,
 } from './messageTypes';
 
 const startConnectListener = (repo: ConnectRepo): void => {
@@ -56,12 +61,18 @@ const connect = async (
     );
     log.info('Sending message: Finish');
     return value;
-  } catch {
-    log.info('Sending message: Error');
-    return resultError(
-      'Error sending message via AuthConnectMessageSender',
-      'messaging-error'
-    );
+  } catch (e) {
+    if (isErrorish(e)) {
+      const err = resultError<ConnectResponse, MessagingError>(
+        e.name,
+        'messaging-error',
+        e
+      );
+      log.error('Sending message: Error', isResultError(err) ? err : undefined);
+      return err;
+    }
+    log.error('Sending message: Error');
+    return resultError('Sending message: Error', 'messaging-error');
   }
 };
 
@@ -126,12 +137,18 @@ const getClientId = async (): Promise<AuthGetClientIdMessageResponse> => {
     );
     log.info('Sending message: Finish');
     return value;
-  } catch {
-    log.info('Sending message: Error');
-    return resultError(
-      'Error sending message via GetClientIdMessageSender',
-      'fetching-client-id'
-    );
+  } catch (e) {
+    if (isErrorish(e)) {
+      const err = resultError<string, MessagingError>(
+        e.name,
+        'messaging-error',
+        e
+      );
+      log.error('Sending message: Error', isResultError(err) ? err : undefined);
+      return err;
+    }
+    log.error('Sending message: Error');
+    return resultError('Sending message: Error', 'messaging-error');
   }
 };
 

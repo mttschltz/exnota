@@ -1,8 +1,8 @@
 import {onMessage, sendMessage} from 'webext-bridge';
-import {createLog} from '@lib/log';
-import {resultError, serializeResult} from '@lib/result';
+import {createLog, isErrorish} from '@lib/log';
+import {isResultError, resultError, serializeResult} from '@lib/result';
 import {newSetPageInteractor, SetPageRepo} from '@background/usecase/setPage';
-import {OptionsSetPageMessageResponse} from './messageTypes';
+import {MessagingError, OptionsSetPageMessageResponse} from './messageTypes';
 
 const startSetPageListener = (repo: SetPageRepo): void => {
   const log = createLog('background', 'OptionsSetPageMessageListener');
@@ -40,12 +40,18 @@ const setPage = async (
     );
     log.info('Sending message: Finish');
     return value;
-  } catch {
-    log.info('Sending message: Error');
-    return resultError(
-      'Error sending message via OptionsSetPageMessageSender',
-      'messaging-error'
-    );
+  } catch (e) {
+    if (isErrorish(e)) {
+      const err = resultError<undefined, MessagingError>(
+        e.name,
+        'messaging-error',
+        e
+      );
+      log.error('Sending message: Error', isResultError(err) ? err : undefined);
+      return err;
+    }
+    log.error('Sending message: Error');
+    return resultError('Sending message: Error', 'messaging-error');
   }
 };
 
