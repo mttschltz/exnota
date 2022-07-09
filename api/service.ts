@@ -5,6 +5,7 @@ const ERROR_COMMON = {
     NO_APP_VERSION: 'no-app-version',
     NO_MESSAGE_BODY: 'no-message-body',
     BODY_NOT_JSON: 'body-not-json',
+    NO_TOKEN: 'api-no-token',
   } as const
 
 // get client id
@@ -57,21 +58,64 @@ interface GetPagesNotionApiSuccessResponse {
     }[]
 }
 
-const GET_PAGES_ERROR = {...ERROR_COMMON, 
-    NO_TOKEN: 'api-no-token',
-} as const
+const GET_PAGES_ERROR = {...ERROR_COMMON} as const
 
 interface GetPagesNotionApiErrorResponse {
     error: typeof GET_PAGES_ERROR[keyof typeof GET_PAGES_ERROR]
 }
 
+// get page
+const GET_PAGE_URI_PART =  'get-page'
+const getPageNotionApiPath = () => `${BASE}${GET_PAGE_URI_PART}`
+
+type GetPageNotionApiSuccessResponse = {
+    status: 'success'
+    page: {
+        id: string
+        title: string
+        url: string
+    }
+} | {
+    status: 'no-access'
+} | {
+    status: 'not-found'
+}
+
+const GET_PAGE_ERROR = {...ERROR_COMMON, 
+    NO_ID: 'api-get-page--no-id',
+} as const
+
+interface GetPageNotionApiErrorResponse {
+    error: typeof GET_PAGE_ERROR[keyof typeof GET_PAGE_ERROR]
+}
+
 export {
-    getClientIdNotionApiPath, getTokenNotionApiPath, getPagesNotionApiPath, GET_TOKEN_ERROR, GET_PAGES_ERROR, GET_TOKEN_URI_PART , GET_PAGES_URI_PART , GET_NOTION_CLIENT_ID_URI_PART
+    // client id
+    getClientIdNotionApiPath,
+    GET_NOTION_CLIENT_ID_URI_PART,
+    // get token
+    getTokenNotionApiPath,
+    GET_TOKEN_URI_PART,
+    GET_TOKEN_ERROR,
+    // get pages
+    getPagesNotionApiPath,
+    GET_PAGES_URI_PART,
+    GET_PAGES_ERROR,
+    // get page
+    getPageNotionApiPath,
+    GET_PAGE_URI_PART,
+    GET_PAGE_ERROR,
 }
 export type {
+    // client id
     GetClientIdNotionApiResponse,
+    // get token
     GetTokenNotionApiSuccessResponse,
     GetTokenNotionApiErrorResponse,
+    // get pages
     GetPagesNotionApiSuccessResponse,
     GetPagesNotionApiErrorResponse,
+    // get page
+    GetPageNotionApiSuccessResponse,
+    GetPageNotionApiErrorResponse,
 }

@@ -1,6 +1,6 @@
-import { GET_NOTION_CLIENT_ID_URI_PART, GET_PAGES_URI_PART, GET_TOKEN_URI_PART } from "@api/service";
+import { GET_NOTION_CLIENT_ID_URI_PART, GET_PAGES_URI_PART, GET_PAGE_URI_PART, GET_TOKEN_URI_PART } from "@api/service";
 
-type Service = typeof GET_TOKEN_URI_PART | typeof  GET_PAGES_URI_PART | typeof  GET_NOTION_CLIENT_ID_URI_PART;
+type Service = typeof  GET_NOTION_CLIENT_ID_URI_PART | typeof GET_TOKEN_URI_PART | typeof  GET_PAGES_URI_PART | typeof  GET_PAGE_URI_PART;
 
 interface Metadata {
   [key: string]:
@@ -21,14 +21,26 @@ const info =
 
 const warn =
   (service: Service, identifiers: Record<string, string | undefined>) =>
-  (message: string, metadata?: Metadata): void => {
-    console.warn(`[${service}] ${message}`, { ...identifiers, ...metadata});
+  (message: string, metadata?: Metadata | {__type: 'error', message: string, name: string}): void => {
+    let obj
+    if (metadata?.__type === 'error') {
+      obj = { ...identifiers, message: metadata.message, name: metadata.name }
+    } else {
+      obj = { ...identifiers, ...metadata }
+    }
+    console.warn(`[${service}] ${message}`, obj);
   };
 
 const error =
   (service: Service, identifiers: Record<string, string | undefined>) =>
-  (message: string, metadata?: Metadata): void => {
-    console.error(`[${service}] ${message}`, { ...identifiers, ...metadata});
+  (message: string, metadata?: Metadata | {__type: 'error', message: string, name: string}): void => {
+    let obj
+    if (metadata?.__type === 'error') {
+      obj = { ...identifiers, message: metadata.message, name: metadata.name }
+    } else {
+      obj = { ...identifiers, ...metadata }
+    }
+    console.error(`[${service}] ${message}`, obj);
   };
 
 const createLog = (
@@ -40,11 +52,11 @@ const createLog = (
   ) => void;
   warn: (
     message: string,
-    metadata?: Metadata | undefined
+    metadata?: undefined | Metadata | {__type: 'error', message: string, name: string},
   ) => void;
   error: (
     message: string,
-    metadata?: Metadata | undefined
+    metadata?: undefined | Metadata | {__type: 'error', message: string, name: string},
   ) => void;
 } => {
   return {
