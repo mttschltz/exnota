@@ -86,6 +86,7 @@ const handler: Handler = async (event, context) => {
       pages.push({
         id: page.id,
         title,
+        url: page.url,
       })
     })
   }

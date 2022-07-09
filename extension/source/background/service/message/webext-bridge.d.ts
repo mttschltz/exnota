@@ -16,7 +16,7 @@ declare module 'webext-bridge' {
       AuthConnectMessageResponse
     >;
     'options.setPage': ProtocolWithReturn<
-      {id: string; title: string},
+      {id: string; title: string; url: string},
       OptionsSetPageMessageResponse
     >;
   }

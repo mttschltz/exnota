@@ -13,6 +13,7 @@ import {
   Text,
   Anchor,
   RadioButtonGroup,
+  Tag,
 } from 'grommet';
 import {browser} from 'webextension-polyfill-ts';
 import {useCallback, useEffect, useMemo, useState} from 'react';
@@ -96,6 +97,9 @@ interface ConnectSelectPageScreen {
 }
 interface StatusScreen {
   readonly __type: 'status';
+  readonly loading: boolean;
+  readonly page: Page | undefined;
+  readonly reconnect: () => void;
 }
 
 const useConnectStep2Screen = ({
@@ -240,14 +244,14 @@ const useConnectSelectPageScreen = ({
       error,
       save: async (): Promise<void> => {
         setSelecting(true);
-        const title = pages.find((p) => p.id === selectedPageId)?.title;
-        if (!title || !selectedPageId) {
+        const page = pages.find((p) => p.id === selectedPageId);
+        if (!page?.title || !page?.url || !selectedPageId) {
           setSelecting(false);
           setError(t('setup:connect.select_page_generic_error'));
           return;
         }
 
-        const result = await setPage(selectedPageId, title);
+        const result = await setPage(selectedPageId, page.title, page.url);
         if (!result.ok) {
           setSelecting(false);
           setError(
@@ -265,8 +269,17 @@ const useConnectSelectPageScreen = ({
 };
 
 const useStatusScreen = (): StatusScreen => {
+  const [loading, setLoading] = useState(true);
+
+  // TODO:
+  // - get page from backend
+  // - get status from backend... do we still have access to the page?
+
   return {
     __type: 'status',
+    loading,
+    page: undefined,
+    reconnect: (): void => {},
   };
 };
 
@@ -556,7 +569,10 @@ const Options: React.FC = () => {
             connectionState.screen?.__type === 'status' && (
               // Using Box instead of div causes margins to not collapse
               <div>
-                <Paragraph>TODO</Paragraph>
+                <Box direction="row">
+                  <Text />
+                  <Tag name="name" value="value" />
+                </Box>
               </div>
             )}
         </PageContent>

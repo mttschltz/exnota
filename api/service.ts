@@ -53,6 +53,7 @@ interface GetPagesNotionApiSuccessResponse {
     pages: {
         id: string
         title: string
+        url: string
     }[]
 }
 

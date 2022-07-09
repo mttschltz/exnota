@@ -17,15 +17,16 @@ interface SetPageRepo {
 const log = createLog('background', 'SetPageUsecase');
 
 interface SetPageInteractor {
-  readonly setPage: (
-    id: string,
-    name: string
-  ) => Promise<Result<void, SetPageError>>;
+  readonly setPage: (fields: {
+    id: string;
+    title: string;
+    url: string;
+  }) => Promise<Result<void, SetPageError>>;
 }
 
 const newSetPageInteractor = (repo: SetPageRepo): SetPageInteractor => {
   const SetPage: SetPageInteractor = {
-    async setPage(id, name) {
+    async setPage({id, title, url}) {
       // get options config
       log.info('Calling repo.getOptionsConfig: Start');
       const optionsConfigResult = await repo.getOptionsConfig();
@@ -36,7 +37,7 @@ const newSetPageInteractor = (repo: SetPageRepo): SetPageInteractor => {
 
       // update page in options config or create new config
       log.info('Creating or update options config: Start');
-      const pageResult = newPage(id, name);
+      const pageResult = newPage(id, title, url);
       if (!pageResult.ok) {
         return pageResult;
       }

@@ -28,7 +28,7 @@ describe('isOptionsConfig', () => {
     });
     describe('When called', () => {
       test('Then it returns true', () => {
-        const pageResult = newPage('id', 'title');
+        const pageResult = newPage('id', 'title', 'url');
         assertResultOk(pageResult);
         expect(isOptionsConfig(newOptionsConfig(pageResult.value))).toBe(true);
         expect(
@@ -47,7 +47,9 @@ describe('isOptionsConfig', () => {
     describe('When called', () => {
       test('Then it returns false', () => {
         expect(
-          isOptionsConfig({page: {id: 'the id', title: 'the title'} as Page})
+          isOptionsConfig({
+            page: {id: 'the id', title: 'the title', url: 'the url'} as Page,
+          })
         ).toBe(false);
       });
     });

@@ -25,16 +25,25 @@ const newOptionsRepo = (storage: LocalForage): OptionsConfigRepo => {
 
       if (has(optionsConfigRaw, 'page')) {
         const {page} = optionsConfigRaw;
+
+        // Must have ID
         let id: string | undefined;
         if (has(page, 'id') && typeof page.id === 'string') {
           id = page.id;
         }
+        // Must have title
         let title: string | undefined;
         if (has(page, 'title') && typeof page.title === 'string') {
           title = page.title;
         }
-        if (id && title) {
-          const pageResult = newPage(id, title);
+        // Must have url
+        let url: string | undefined;
+        if (has(page, 'url') && typeof page.url === 'string') {
+          title = page.url;
+        }
+
+        if (id && title && url) {
+          const pageResult = newPage(id, title, url);
           if (pageResult.ok) {
             log.info('Options config constructed from storage');
             return resultOk(newOptionsConfig(pageResult.value));
@@ -63,6 +72,7 @@ const newOptionsRepo = (storage: LocalForage): OptionsConfigRepo => {
         [OPTIONS_REPO_KEY.PAGE]: {
           id: optionsConfig.page.id,
           title: optionsConfig.page.title,
+          url: optionsConfig.page.url,
         },
       });
       log.info('Calling storage.setItem: Finish');

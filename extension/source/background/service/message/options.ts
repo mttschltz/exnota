@@ -12,7 +12,11 @@ const startSetPageListener = (repo: SetPageRepo): void => {
 
   onMessage('options.setPage', async ({data}) => {
     log.info('Calling set page interactor: Start');
-    const result = await interactor.setPage(data.id, data.title);
+    const result = await interactor.setPage({
+      id: data.id,
+      title: data.title,
+      url: data.url,
+    });
     log.info('Calling set page interactor: Finish');
 
     if (!result.ok) {
@@ -27,7 +31,8 @@ const startSetPageListener = (repo: SetPageRepo): void => {
 
 const setPage = async (
   id: string,
-  title: string
+  title: string,
+  url: string
 ): Promise<OptionsSetPageMessageResponse> => {
   const log = createLog('background', 'OptionsSetPageMessageSender');
 
@@ -35,7 +40,7 @@ const setPage = async (
     log.info('Sending message: Start');
     const value = await sendMessage(
       'options.setPage',
-      {id, title},
+      {id, title, url},
       'background'
     );
     log.info('Sending message: Finish');
