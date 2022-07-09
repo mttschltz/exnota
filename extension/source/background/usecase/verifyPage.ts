@@ -3,8 +3,10 @@ import {Errors, Result, resultOk} from '@lib/result';
 import {OptionsConfigRepo} from '@background/repo';
 import {newPage, Page} from '@background/page';
 
+type GetPageError = 'error-getting-page';
+
 type VerifyPageError = Errors<
-  Errors<typeof newPage, 'error-verifying-page'>,
+  Errors<typeof newPage, GetPageError>,
   Errors<OptionsConfigRepo['getConfig']>
 >;
 
@@ -20,9 +22,7 @@ interface VerifyPageRepo {
 }
 
 interface VerifyPageService {
-  verifyPage: (
-    id: string
-  ) => Promise<Result<VerifyPageResponse, VerifyPageError>>;
+  verifyPage: (id: string) => Promise<Result<VerifyPageResponse, GetPageError>>;
 }
 
 const log = createLog('background', 'VerifyPageUsecase');
@@ -70,5 +70,5 @@ const newVerifyPageInteractor = (
   return VerifyPage;
 };
 
-export type {VerifyPageInteractor, VerifyPageRepo};
+export type {VerifyPageInteractor, VerifyPageRepo, VerifyPageService};
 export {newVerifyPageInteractor};
