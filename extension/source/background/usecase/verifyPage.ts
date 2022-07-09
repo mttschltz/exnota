@@ -22,7 +22,7 @@ interface VerifyPageRepo {
 }
 
 interface VerifyPageService {
-  verifyPage: (id: string) => Promise<Result<VerifyPageResponse, GetPageError>>;
+  getPage: (id: string) => Promise<Result<VerifyPageResponse, GetPageError>>;
 }
 
 const log = createLog('background', 'VerifyPageUsecase');
@@ -57,7 +57,7 @@ const newVerifyPageInteractor = (
 
       // get page from notion
       log.info('Calling service.verifyPage: Start');
-      const verifyPageResult = await service.verifyPage(id);
+      const verifyPageResult = await service.getPage(id);
       log.info('Calling service.verifyPage: Finish');
       if (!verifyPageResult.ok) {
         log.info('Calling service.verifyPage: Error');

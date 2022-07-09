@@ -19,5 +19,9 @@ declare module 'webext-bridge' {
       {id: string; title: string; url: string},
       OptionsSetPageMessageResponse
     >;
+    'options.verifyPage': ProtocolWithReturn<
+      undefined,
+      OptionsVerifyPageMessageResponse
+    >;
   }
 }

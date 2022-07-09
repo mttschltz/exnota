@@ -21,7 +21,7 @@ import {hpe} from 'grommet-theme-hpe';
 import {useTranslate, Translate} from '@background/ui/i18n/i18n';
 import {connect, getClientId} from '@background/service/message/auth';
 import {Page} from '@background/page';
-import {setPage} from '@background/service/message/options';
+import {setPage, verifyPage} from '@background/service/message/options';
 
 const ErrorWithDetails: React.FC<{
   message: string;
@@ -100,6 +100,7 @@ interface StatusScreen {
   readonly loading: boolean;
   readonly page: Page | undefined;
   readonly reconnect: () => void;
+  readonly init: () => void;
 }
 
 const useConnectStep2Screen = ({
@@ -270,17 +271,56 @@ const useConnectSelectPageScreen = ({
 
 const useStatusScreen = (): StatusScreen => {
   const [loading, setLoading] = useState(true);
+  const [initialised, setInitialised] = useState(false);
+  const [optionsPage, setOptionsPage] = useState<Page | undefined>(undefined);
+  const init = useCallback(async () => {
+    if (initialised) {
+      return;
+    }
+    setInitialised(true);
+
+    setLoading(true);
+    const result = await verifyPage();
+    setLoading(false);
+
+    if (!result.ok) {
+      // TODO: error
+      return;
+    }
+    if (result.value.status === 'no-access') {
+      // TODO:
+      return;
+    }
+    if (result.value.status === 'no-page') {
+      // TODO:
+      return;
+    }
+    if (result.value.status === 'not-found') {
+      // TODO:
+      return;
+    }
+    if (result.value.status === 'success') {
+      // TODO:
+      setOptionsPage(result.value.page);
+    }
+  }, [initialised]);
 
   // TODO:
   // - get page from backend
   // - get status from backend... do we still have access to the page?
 
-  return {
-    __type: 'status',
-    loading,
-    page: undefined,
-    reconnect: (): void => {},
-  };
+  const screen = useMemo(
+    () => ({
+      __type: 'status' as const,
+      loading,
+      page: optionsPage,
+      // TODO:
+      reconnect: (): void => {},
+      init,
+    }),
+    [init, loading, optionsPage]
+  );
+  return screen;
 };
 
 const useGetConnectionState = (): GetConnectionState => {
@@ -358,6 +398,7 @@ const useGetConnectionState = (): GetConnectionState => {
         break;
       case 'status':
         setScreen(statusScreen);
+        statusScreen.init();
         break;
       default:
         break;
@@ -571,7 +612,12 @@ const Options: React.FC = () => {
               <div>
                 <Box direction="row">
                   <Text />
-                  <Tag name="name" value="value" />
+                  <Tag
+                    // TODO: Translation
+                    name="page"
+                    // TODO: Translation
+                    value={connectionState.screen.page?.title ?? 'No Page'}
+                  />
                 </Box>
               </div>
             )}
