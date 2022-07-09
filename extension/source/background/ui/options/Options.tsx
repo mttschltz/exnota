@@ -58,6 +58,7 @@ interface GetConnectionState {
     | ConnectStep1Screen
     | ConnectStep2Screen
     | ConnectSelectPageScreen
+    | StatusScreen
     | null;
 }
 
@@ -65,7 +66,8 @@ type ScreenType =
   | 'connect-start'
   | 'connect-step1'
   | 'connect-step2'
-  | 'connect-select-page';
+  | 'connect-select'
+  | 'status';
 
 interface ConnectStartScreen {
   readonly __type: 'connect-start';
@@ -82,7 +84,7 @@ interface ConnectStep2Screen {
   readonly error?: string;
 }
 interface ConnectSelectPageScreen {
-  readonly __type: 'connect-select-page';
+  readonly __type: 'connect-select';
   readonly pages: Page[];
   readonly selecting: boolean;
   readonly selectedPageId: string | undefined;
@@ -92,11 +94,19 @@ interface ConnectSelectPageScreen {
   readonly save: () => Promise<void>;
   readonly error?: string;
 }
+interface StatusScreen {
+  readonly __type: 'status';
+}
 
-const useConnectStep2Screen = (
-  setScreenType: React.Dispatch<React.SetStateAction<ScreenType | null>>,
-  setPages: React.Dispatch<React.SetStateAction<Page[]>>
-): ConnectStep2Screen => {
+const useConnectStep2Screen = ({
+  onMultiple,
+  onSingle,
+  setPages,
+}: {
+  setPages: React.Dispatch<React.SetStateAction<Page[]>>;
+  onMultiple: () => void;
+  onSingle: () => void;
+}): ConnectStep2Screen => {
   const [error, setError] = useState<string | undefined>(undefined);
   const [connecting, setConnecting] = useState(false);
   const t = useTranslate(['setup']);
@@ -143,7 +153,6 @@ const useConnectStep2Screen = (
 
       const params = new URLSearchParams(paramStr);
       const code = params.get('code');
-      console.log(`code=${code}`);
 
       if (!code) {
         // TODO: Customize error?
@@ -172,20 +181,20 @@ const useConnectStep2Screen = (
 
       setConnecting(false);
       if (connectResult.value.status === 'page-set') {
-        // TODO:
+        onSingle();
       } else if (connectResult.value.status === 'multiple-pages') {
         setPages(
           connectResult.value.pages.sort((a, b) =>
             a.title.localeCompare(b.title)
           )
         );
-        setScreenType('connect-select-page');
+        onMultiple();
       }
     } catch {
       setError(t('setup:connect.step2_denied_access'));
       setConnecting(false);
     }
-  }, [setPages, setScreenType, t]);
+  }, [onMultiple, onSingle, setPages, t]);
 
   const screen: ConnectStep2Screen = useMemo(() => {
     return {
@@ -199,7 +208,13 @@ const useConnectStep2Screen = (
   return screen;
 };
 
-const useConnectSelectPageScreen = (pages: Page[]): ConnectSelectPageScreen => {
+const useConnectSelectPageScreen = ({
+  onSuccess,
+  pages,
+}: {
+  pages: Page[];
+  onSuccess: () => void;
+}): ConnectSelectPageScreen => {
   const [selecting, setSelecting] = useState(false);
   const [selectedPageId, setSelectedPageId] = useState<string | undefined>(
     pages[0]?.id
@@ -215,7 +230,7 @@ const useConnectSelectPageScreen = (pages: Page[]): ConnectSelectPageScreen => {
 
   const screen: ConnectSelectPageScreen = useMemo(() => {
     return {
-      __type: 'connect-select-page',
+      __type: 'connect-select',
       selecting,
       pages,
       selectedPageId,
@@ -226,7 +241,6 @@ const useConnectSelectPageScreen = (pages: Page[]): ConnectSelectPageScreen => {
       save: async (): Promise<void> => {
         setSelecting(true);
         const title = pages.find((p) => p.id === selectedPageId)?.title;
-
         if (!title || !selectedPageId) {
           setSelecting(false);
           setError(t('setup:connect.select_page_generic_error'));
@@ -241,12 +255,19 @@ const useConnectSelectPageScreen = (pages: Page[]): ConnectSelectPageScreen => {
               code: result.errorType,
             })
           );
+          return;
         }
-        // TODO: Next screen
+        onSuccess();
       },
     };
-  }, [error, pages, selectedPageId, selecting, t]);
+  }, [error, pages, selectedPageId, selecting, onSuccess, t]);
   return screen;
+};
+
+const useStatusScreen = (): StatusScreen => {
+  return {
+    __type: 'status',
+  };
 };
 
 const useGetConnectionState = (): GetConnectionState => {
@@ -276,8 +297,25 @@ const useGetConnectionState = (): GetConnectionState => {
     }),
     []
   );
-  const connectStep2Screen = useConnectStep2Screen(setScreenType, setPages);
-  const connectSelectPageScreen = useConnectSelectPageScreen(pages);
+
+  const toSelectPageScreen = useCallback(() => {
+    setScreenType('connect-select');
+  }, []);
+  const toStatusScreen = useCallback(() => {
+    setScreenType('status');
+  }, []);
+  const connectStep2Screen = useConnectStep2Screen({
+    onMultiple: toSelectPageScreen,
+    onSingle: toStatusScreen,
+    setPages,
+  });
+
+  const connectSelectPageScreen = useConnectSelectPageScreen({
+    pages,
+    onSuccess: toStatusScreen,
+  });
+
+  const statusScreen = useStatusScreen();
 
   // Update screen type on state change
   useEffect(() => {
@@ -302,8 +340,11 @@ const useGetConnectionState = (): GetConnectionState => {
       case 'connect-step2':
         setScreen(connectStep2Screen);
         break;
-      case 'connect-select-page':
+      case 'connect-select':
         setScreen(connectSelectPageScreen);
+        break;
+      case 'status':
+        setScreen(statusScreen);
         break;
       default:
         break;
@@ -314,6 +355,7 @@ const useGetConnectionState = (): GetConnectionState => {
     connectStep1Screen,
     connectStep2Screen,
     connectSelectPageScreen,
+    statusScreen,
   ]);
 
   // TODO: Get state from message API
@@ -467,7 +509,7 @@ const Options: React.FC = () => {
               </div>
             )}
           {!connectionState.loading &&
-            connectionState.screen?.__type === 'connect-select-page' && (
+            connectionState.screen?.__type === 'connect-select' && (
               // Using Box instead of div causes margins to not collapse
               <div>
                 <StepHeading heading="setup:connect.select_page_heading" />
@@ -508,6 +550,13 @@ const Options: React.FC = () => {
                     />
                   </Box>
                 </Box>
+              </div>
+            )}
+          {!connectionState.loading &&
+            connectionState.screen?.__type === 'status' && (
+              // Using Box instead of div causes margins to not collapse
+              <div>
+                <Paragraph>TODO</Paragraph>
               </div>
             )}
         </PageContent>
