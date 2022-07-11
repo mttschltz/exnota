@@ -23,7 +23,8 @@ const newOptionsRepo = (storage: LocalForage): OptionsConfigRepo => {
         return resultOk(undefined);
       }
 
-      if (has(optionsConfigRaw, 'page')) {
+      // TODO: Update to use the const for property name
+      if (has(optionsConfigRaw, OPTIONS_REPO_KEY.PAGE)) {
         const {page} = optionsConfigRaw;
 
         // Must have ID
@@ -39,7 +40,7 @@ const newOptionsRepo = (storage: LocalForage): OptionsConfigRepo => {
         // Must have url
         let url: string | undefined;
         if (has(page, 'url') && typeof page.url === 'string') {
-          title = page.url;
+          url = page.url;
         }
 
         if (id && title && url) {
@@ -48,6 +49,10 @@ const newOptionsRepo = (storage: LocalForage): OptionsConfigRepo => {
             log.info('Options config constructed from storage');
             return resultOk(newOptionsConfig(pageResult.value));
           }
+          log.info(
+            `Options config could not be constructed from storage due to page error`
+          );
+          return resultOk(undefined);
         }
       }
 

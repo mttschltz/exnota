@@ -1,6 +1,7 @@
 import {
   GetPageNotionApiErrorResponse,
   getPageNotionApiPath,
+  GetPageNotionApiRequest,
   GetPageNotionApiSuccessResponse,
 } from '@api/service';
 import {VerifyPageService} from '@background/usecase/verifyPage';
@@ -8,7 +9,7 @@ import {createLog, isErrorish} from '@lib/log';
 import {resultError, resultOk, serializeResult} from '@lib/result';
 import {browser} from 'webextension-polyfill-ts';
 
-const getPage: VerifyPageService['verifyPage'] = async () => {
+const getPage: VerifyPageService['getPage'] = async (id: string) => {
   const log = createLog('background', 'GetPageService');
 
   log.info('Calling notionGetPages: Start');
@@ -16,11 +17,13 @@ const getPage: VerifyPageService['verifyPage'] = async () => {
     const headers = new Headers();
     headers.append('X-App-Version', browser.runtime.getManifest().version);
 
+    const requestBody: GetPageNotionApiRequest = {id}
     const response = await fetch(getPageNotionApiPath(), {
       method: 'POST',
       mode: 'same-origin',
       credentials: 'same-origin',
       headers,
+      body: JSON.stringify(requestBody),
     });
     if (response.ok) {
       log.info('Calling notionGetPage: Finish - ok response');

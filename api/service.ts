@@ -68,6 +68,10 @@ interface GetPagesNotionApiErrorResponse {
 const GET_PAGE_URI_PART =  'get-page'
 const getPageNotionApiPath = () => `${BASE}${GET_PAGE_URI_PART}`
 
+interface GetPageNotionApiRequest {
+    id: string
+}
+
 type GetPageNotionApiSuccessResponse = {
     status: 'success'
     page: {
@@ -116,6 +120,7 @@ export type {
     GetPagesNotionApiSuccessResponse,
     GetPagesNotionApiErrorResponse,
     // get page
+    GetPageNotionApiRequest,
     GetPageNotionApiSuccessResponse,
     GetPageNotionApiErrorResponse,
 }

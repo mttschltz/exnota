@@ -1,4 +1,4 @@
-import { GetPageNotionApiErrorResponse, GetPageNotionApiSuccessResponse, GetPagesNotionApiErrorResponse, GetPagesNotionApiSuccessResponse, GET_PAGES_ERROR, GET_PAGE_ERROR, GET_TOKEN_ERROR } from "@api/service";
+import { GetPageNotionApiErrorResponse, GetPageNotionApiRequest, GetPageNotionApiSuccessResponse, GetPagesNotionApiErrorResponse, GetPagesNotionApiSuccessResponse, GET_PAGES_ERROR, GET_PAGE_ERROR, GET_TOKEN_ERROR } from "@api/service";
 import { Handler } from "@netlify/functions";
 import { Client } from '@notionhq/client'
 import { hasAppVersion } from "src/helper/appVersion";
@@ -43,7 +43,7 @@ const handler: Handler = async (event, context) => {
   // params
   let id
   try {
-    const body = JSON.parse(event.body)
+    const body = JSON.parse(event.body) as Partial<GetPageNotionApiRequest> | undefined
     id = body?.id
   } catch (e) {
     if (isErrorish(e)) {
