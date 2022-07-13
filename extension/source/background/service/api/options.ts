@@ -12,7 +12,7 @@ import {browser} from 'webextension-polyfill-ts';
 const getPage: GetPageService = async (id: string) => {
   const log = createLog('background', 'GetPageService');
 
-  log.info('Calling notionGetPages: Start');
+  log.info('Calling notionGetPage: Start');
   try {
     const headers = new Headers();
     headers.append('X-App-Version', browser.runtime.getManifest().version);

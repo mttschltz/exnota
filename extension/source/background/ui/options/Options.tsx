@@ -450,9 +450,216 @@ const StepHeading: React.FC<{
   );
 };
 
-const Options: React.FC = () => {
-  const t = useTranslate(['setup']);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const Connect: React.FC = () => {
   const connectionState = useGetConnectionState();
+  const t = useTranslate(['setup']);
+  return (
+    <>
+      {/* TODO: Replace with loading state from message API */}
+      {connectionState.loading && (
+        <Box
+          align="center"
+          justify="center"
+          height={{height: 'medium', max: '50vh'}}
+        >
+          <Spinner />
+        </Box>
+      )}
+      {/* TODO: Replace with loading state from message API */}
+      {!connectionState.loading && !connectionState.screen && (
+        <ErrorWithDetails
+          customMessage={t('setup:loading.error')}
+          message={'missing error'}
+          code={'missing error'}
+        />
+      )}
+      {!connectionState.loading &&
+        connectionState.screen?.__type === 'connect-start' && (
+          <Box
+            direction="column"
+            height={{min: '50vh'}}
+            justify="center"
+            align="center"
+          >
+            <Paragraph>{t('setup:connect.start_description')}</Paragraph>
+            <Box>
+              <Button
+                primary
+                label={t('setup:connect.start_button')}
+                onClick={connectionState.screen.start}
+              />
+            </Box>
+          </Box>
+        )}
+      {!connectionState.loading &&
+        connectionState.screen?.__type === 'connect-step1' && (
+          // Using Box instead of div causes margins to not collapse
+          <div>
+            <StepHeading heading="setup:connect.step1_heading" />
+            <Paragraph>
+              <Translate i18nKey="connect.step1_description_1">
+                Open{' '}
+                <Anchor target="_blank" href="https://www.notion.com">
+                  Notion
+                </Anchor>{' '}
+                and create a page for Exnota to save highlights to.
+              </Translate>
+            </Paragraph>
+            <Paragraph>{t('setup:connect.step1_description_2')}</Paragraph>
+            <Box justify="end" align="center" gap="xsmall" direction="row">
+              <Text>{t('setup:connect.step1_confirm')}</Text>
+              <Button
+                primary
+                label={t('common:action.next')}
+                onClick={connectionState.screen.next}
+              />
+            </Box>
+          </div>
+        )}
+      {!connectionState.loading &&
+        connectionState.screen?.__type === 'connect-step2' && (
+          // Using Box instead of div causes margins to not collapse
+          <div>
+            <StepHeading heading="setup:connect.step2_heading" />
+            <Paragraph>
+              <Translate i18nKey="connect.step2_description">
+                Click <Text weight="bold">Give access</Text> to open a window
+                where Notion allows you to give Exnota access to the page where
+                it should save highlights to.
+              </Translate>
+            </Paragraph>
+            {connectionState.screen.error && (
+              <Paragraph color="status-critical">
+                {connectionState.screen.error}
+              </Paragraph>
+            )}
+            <Box justify="end" align="center" gap="xsmall" direction="row">
+              {connectionState.screen.connecting && <Spinner />}
+              <Button
+                primary
+                label={
+                  connectionState.screen.connecting
+                    ? t('setup:connect.step2_try_again')
+                    : t('setup:connect.step2_give_access')
+                }
+                onClick={connectionState.screen.giveAccess}
+              />
+            </Box>
+          </div>
+        )}
+      {!connectionState.loading &&
+        connectionState.screen?.__type === 'connect-select' && (
+          // Using Box instead of div causes margins to not collapse
+          <div>
+            <StepHeading heading="setup:connect.select_page_heading" />
+            <Paragraph>{t('setup:connect.select_page_description')}</Paragraph>
+            {connectionState.screen.error && (
+              <Paragraph color="status-critical">
+                {connectionState.screen.error}
+              </Paragraph>
+            )}
+            {/* TODO: Add scrollable radio button group with all pages */}
+            <Box justify="between" align="center" gap="xsmall" direction="row">
+              <RadioButtonGroup
+                name="page"
+                options={connectionState.screen.pages.map((p) => ({
+                  value: p.id,
+                  label: p.title,
+                }))}
+                value={connectionState.screen.selectedPageId}
+                onChange={connectionState.screen.setSelectedPage}
+              />
+              <Box direction="row">
+                {connectionState.screen.selecting && <Spinner />}
+                <Button
+                  primary
+                  label={
+                    connectionState.screen.selecting
+                      ? t('setup:connect.select_page_try_again')
+                      : t('setup:connect.select_page_finish')
+                  }
+                  onClick={connectionState.screen.save}
+                />
+              </Box>
+            </Box>
+          </div>
+        )}
+      {!connectionState.loading && connectionState.screen?.__type === 'status' && (
+        // Using Box instead of div causes margins to not collapse
+        <div>
+          <Box direction="row">
+            <Text />
+            <Tag
+              // TODO: Translation
+              name="page"
+              // TODO: Translation
+              value={connectionState.screen.page?.title ?? 'No Page'}
+            />
+          </Box>
+        </div>
+      )}
+    </>
+  );
+};
+
+const Options: React.FC = () => {
+  const [flow, setFlow] = useState<'status' | 'connect' | 'loading' | 'error'>(
+    'loading'
+  );
+  const [reconnectMessage, setReconnectMesage] = useState<string | undefined>(
+    undefined
+  );
+  const [error, setError] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    async function verify(): Promise<void> {
+      const result = await verifyPage();
+      let newFlow: typeof flow;
+      let newReconnectMessage: typeof reconnectMessage;
+      let newError: typeof error;
+
+      if (result.ok) {
+        // No default case so that we get a TypeScript error if a new status type is added.
+        // eslint-disable-next-line default-case
+        switch (result.value.status) {
+          case 'no-auth':
+            newFlow = 'connect';
+            newReconnectMessage = undefined;
+            newError = undefined;
+            break;
+          case 'invalid-auth':
+            newFlow = 'status';
+            // TODO: translated message
+            newReconnectMessage = undefined;
+            newError = undefined;
+            break;
+          case 'no-page':
+          case 'no-page-access':
+            newFlow = 'status';
+            // TODO: translated message
+            newReconnectMessage = undefined;
+            newError = undefined;
+            break;
+          case 'success':
+            newFlow = 'status';
+            newReconnectMessage = undefined;
+            newError = undefined;
+            break;
+        }
+        setFlow(newFlow);
+      } else {
+        newFlow = 'error';
+        newReconnectMessage = undefined;
+        // TODO: Show translated error message
+        newError = undefined;
+      }
+      setFlow(newFlow);
+      setReconnectMesage(newReconnectMessage);
+      setError(newError);
+    }
+    verify();
+  }, []);
 
   return (
     <Grommet theme={hpe}>
@@ -468,159 +675,16 @@ const Options: React.FC = () => {
               <Heading level="3" size="4" alignSelf="center">
                 {browser.i18n.getMessage('extensionName')}
               </Heading>
+              <div>
+                <Box>
+                  {flow === 'loading' && <Spinner />}
+                  {flow === 'connect' && <Paragraph>Connect</Paragraph>}
+                  {flow === 'status' && <Paragraph>Status</Paragraph>}
+                  {flow === 'error' && <Paragraph>Error</Paragraph>}
+                </Box>
+              </div>
             </Box>
           </Header>
-          {/* TODO: Replace with loading state from message API */}
-          {connectionState.loading && (
-            <Box
-              align="center"
-              justify="center"
-              height={{height: 'medium', max: '50vh'}}
-            >
-              <Spinner />
-            </Box>
-          )}
-          {/* TODO: Replace with loading state from message API */}
-          {!connectionState.loading && !connectionState.screen && (
-            <ErrorWithDetails
-              customMessage={t('setup:loading.error')}
-              message={'missing error'}
-              code={'missing error'}
-            />
-          )}
-          {!connectionState.loading &&
-            connectionState.screen?.__type === 'connect-start' && (
-              <Box
-                direction="column"
-                height={{min: '50vh'}}
-                justify="center"
-                align="center"
-              >
-                <Paragraph>{t('setup:connect.start_description')}</Paragraph>
-                <Box>
-                  <Button
-                    primary
-                    label={t('setup:connect.start_button')}
-                    onClick={connectionState.screen.start}
-                  />
-                </Box>
-              </Box>
-            )}
-          {!connectionState.loading &&
-            connectionState.screen?.__type === 'connect-step1' && (
-              // Using Box instead of div causes margins to not collapse
-              <div>
-                <StepHeading heading="setup:connect.step1_heading" />
-                <Paragraph>
-                  <Translate i18nKey="connect.step1_description_1">
-                    Open{' '}
-                    <Anchor target="_blank" href="https://www.notion.com">
-                      Notion
-                    </Anchor>{' '}
-                    and create a page for Exnota to save highlights to.
-                  </Translate>
-                </Paragraph>
-                <Paragraph>{t('setup:connect.step1_description_2')}</Paragraph>
-                <Box justify="end" align="center" gap="xsmall" direction="row">
-                  <Text>{t('setup:connect.step1_confirm')}</Text>
-                  <Button
-                    primary
-                    label={t('common:action.next')}
-                    onClick={connectionState.screen.next}
-                  />
-                </Box>
-              </div>
-            )}
-          {!connectionState.loading &&
-            connectionState.screen?.__type === 'connect-step2' && (
-              // Using Box instead of div causes margins to not collapse
-              <div>
-                <StepHeading heading="setup:connect.step2_heading" />
-                <Paragraph>
-                  <Translate i18nKey="connect.step2_description">
-                    Click <Text weight="bold">Give access</Text> to open a
-                    window where Notion allows you to give Exnota access to the
-                    page where it should save highlights to.
-                  </Translate>
-                </Paragraph>
-                {connectionState.screen.error && (
-                  <Paragraph color="status-critical">
-                    {connectionState.screen.error}
-                  </Paragraph>
-                )}
-                <Box justify="end" align="center" gap="xsmall" direction="row">
-                  {connectionState.screen.connecting && <Spinner />}
-                  <Button
-                    primary
-                    label={
-                      connectionState.screen.connecting
-                        ? t('setup:connect.step2_try_again')
-                        : t('setup:connect.step2_give_access')
-                    }
-                    onClick={connectionState.screen.giveAccess}
-                  />
-                </Box>
-              </div>
-            )}
-          {!connectionState.loading &&
-            connectionState.screen?.__type === 'connect-select' && (
-              // Using Box instead of div causes margins to not collapse
-              <div>
-                <StepHeading heading="setup:connect.select_page_heading" />
-                <Paragraph>
-                  {t('setup:connect.select_page_description')}
-                </Paragraph>
-                {connectionState.screen.error && (
-                  <Paragraph color="status-critical">
-                    {connectionState.screen.error}
-                  </Paragraph>
-                )}
-                {/* TODO: Add scrollable radio button group with all pages */}
-                <Box
-                  justify="between"
-                  align="center"
-                  gap="xsmall"
-                  direction="row"
-                >
-                  <RadioButtonGroup
-                    name="page"
-                    options={connectionState.screen.pages.map((p) => ({
-                      value: p.id,
-                      label: p.title,
-                    }))}
-                    value={connectionState.screen.selectedPageId}
-                    onChange={connectionState.screen.setSelectedPage}
-                  />
-                  <Box direction="row">
-                    {connectionState.screen.selecting && <Spinner />}
-                    <Button
-                      primary
-                      label={
-                        connectionState.screen.selecting
-                          ? t('setup:connect.select_page_try_again')
-                          : t('setup:connect.select_page_finish')
-                      }
-                      onClick={connectionState.screen.save}
-                    />
-                  </Box>
-                </Box>
-              </div>
-            )}
-          {!connectionState.loading &&
-            connectionState.screen?.__type === 'status' && (
-              // Using Box instead of div causes margins to not collapse
-              <div>
-                <Box direction="row">
-                  <Text />
-                  <Tag
-                    // TODO: Translation
-                    name="page"
-                    // TODO: Translation
-                    value={connectionState.screen.page?.title ?? 'No Page'}
-                  />
-                </Box>
-              </div>
-            )}
         </PageContent>
       </GrommetPage>
     </Grommet>

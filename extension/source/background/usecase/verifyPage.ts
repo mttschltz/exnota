@@ -2,23 +2,17 @@ import {createLog} from '@lib/log';
 import {Errors, Result, resultError, resultOk} from '@lib/result';
 import {OptionsConfigRepo} from '@background/repo';
 import {newPage, Page} from '@background/page';
-import {
-  GetPageError,
-  GetPageResponse,
-  GetPageService,
-  GetPagesService,
-} from '@background/service';
-import {getPages} from '@background/service/api/auth';
+import {GetPageService, GetPagesService} from '@background/service';
 
 type VerifyPageResponse =
   | {
       status: 'success';
       page: Page;
     }
-  | {status: 'no-page' | 'no-page-access' | 'invalid-auth'};
+  | {status: 'no-page' | 'no-page-access' | 'invalid-auth' | 'no-auth'};
 
 type VerifyPageError = Errors<
-  'usecase--verify-page--no-page-access' | 'usecase--verify-page--invalid-auth',
+  Errors<'usecase--verify-page--other'>,
   Errors<OptionsConfigRepo['getConfig'], typeof newPage>
 >;
 
@@ -55,10 +49,18 @@ const newVerifyPageInteractor = (
       }
       log.info('Calling repo.getOptionsConfig: Finish');
 
-      const id = optionsConfigResult.value?.page?.id;
+      if (optionsConfigResult.value === undefined) {
+        return resultOk({
+          status: 'no-auth',
+        });
+      }
+
+      const id = optionsConfigResult.value.page.id;
       if (!id) {
         // Use get pages to test if token is valid
+        log.info('Calling service.getPages: Start');
         const getPagesResult = await service.getPages();
+        log.info('Calling service.getPages: Finish');
         if (getPagesResult.ok) {
           return resultOk({
             status: 'no-page',
@@ -74,12 +76,14 @@ const newVerifyPageInteractor = (
           case 'service--get-pages--other':
             return resultError(
               'Could not verify auth',
-              'usecase--verify-page--no-page-access'
+              'usecase--verify-page--other'
             );
         }
       }
 
+      log.info('Calling service.getPage: Start');
       const getPageResult = await service.getPage(id);
+      log.info('Calling service.getPage: Finish');
       if (getPageResult.ok) {
         return resultOk({
           status: 'success',
@@ -100,7 +104,7 @@ const newVerifyPageInteractor = (
         case 'service--get-page--other':
           return resultError(
             'Could not verify page access',
-            'usecase--verify-page--no-page-access'
+            'usecase--verify-page--other'
           );
       }
     },
