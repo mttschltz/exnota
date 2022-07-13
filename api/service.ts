@@ -6,6 +6,7 @@ const ERROR_COMMON = {
     NO_MESSAGE_BODY: 'no-message-body',
     BODY_NOT_JSON: 'body-not-json',
     NO_TOKEN: 'api-no-token',
+    INVALID_TOKEN: 'api--invalid-token',
   } as const
 
 // get client id
@@ -73,20 +74,17 @@ interface GetPageNotionApiRequest {
 }
 
 type GetPageNotionApiSuccessResponse = {
-    status: 'success'
     page: {
         id: string
         title: string
         url: string
     }
-} | {
-    status: 'no-access'
-} | {
-    status: 'not-found'
 }
 
 const GET_PAGE_ERROR = {...ERROR_COMMON, 
-    NO_ID: 'api-get-page--no-id',
+    NO_ID: 'api--get-page--no-id',
+    NO_ACCESS: 'api--get-page--no-access',
+    NOT_FOUND: 'api--get-page--not-found',
 } as const
 
 interface GetPageNotionApiErrorResponse {

@@ -6,12 +6,13 @@ import {
   getTokenNotionApiPath,
   GetTokenNotionApiSuccessResponse,
 } from '@api/service';
+import {GetPagesService} from '@background/service';
 import {ConnectService} from '@background/usecase/connect';
 import {createLog, isErrorish} from '@lib/log';
 import {resultError, resultOk, serializeResult} from '@lib/result';
 import {browser} from 'webextension-polyfill-ts';
 
-const getPages: ConnectService['getPages'] = async () => {
+const getPages: GetPagesService = async () => {
   const log = createLog('background', 'GetPagesService');
 
   log.info('Calling notionGetPages: Start');
@@ -39,7 +40,7 @@ const getPages: ConnectService['getPages'] = async () => {
       return serializeResult(
         resultError(
           `Error getting pages: ${body?.error} (${response.statusText} - ${response.status})`,
-          'error-getting-pages',
+          'service--get-pages--other',
           undefined,
           {
             status: response.status,
@@ -51,7 +52,7 @@ const getPages: ConnectService['getPages'] = async () => {
       return serializeResult(
         resultError(
           `Error getting pages: ${response.statusText} - ${response.status}`,
-          'error-getting-pages',
+          'service--get-pages--other',
           undefined,
           {
             status: response.status,
@@ -63,11 +64,13 @@ const getPages: ConnectService['getPages'] = async () => {
   } catch (e) {
     if (isErrorish(e)) {
       log.info('Calling notionGetPages: Error', e);
-      return serializeResult(resultError(e.name, 'error-getting-pages', e));
+      return serializeResult(
+        resultError(e.name, 'service--get-pages--other', e)
+      );
     }
     log.info('Calling notionGetPages: Error');
     return serializeResult(
-      resultError('Error fetching client ID', 'error-getting-pages')
+      resultError('Error fetching client ID', 'service--get-pages--other')
     );
   }
 };

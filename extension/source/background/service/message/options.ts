@@ -13,6 +13,7 @@ import {
   VerifyPageRepo,
 } from '@background/usecase/verifyPage';
 import {getPage} from '@background/service/api/options';
+import {getPages} from '@background/service/api/auth';
 import {
   MessagingError,
   OptionsSetPageMessageResponse,
@@ -81,6 +82,7 @@ const startVerifyPageListener = (repo: VerifyPageRepo): void => {
 
   const interactor = newVerifyPageInteractor(repo, {
     getPage,
+    getPages,
   });
 
   onMessage('options.verifyPage', async () => {

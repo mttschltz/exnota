@@ -64,6 +64,8 @@ const handler: Handler = async (event, context) => {
   const res = await notion.pages.retrieve({
     page_id: id,
   });
+  
+  // TODO: handle the case where token is invalid/expired... how can we catch this?
 
   let page: { id: string, title: string, url: string } | undefined
   if ('parent' in res) {
@@ -92,14 +94,11 @@ const handler: Handler = async (event, context) => {
 
   if (!page) {
     log.info('Page not found')
-    return resultOk({
-      status: 'not-found' 
-    })
+    return resultError({error: 'api--get-page--not-found'})
   }
 
   log.info('Finished')
   return resultOk({
-    status: 'success',
     page,
   })
 };

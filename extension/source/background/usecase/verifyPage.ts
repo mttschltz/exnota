@@ -1,28 +1,34 @@
 import {createLog} from '@lib/log';
-import {Errors, Result, resultOk} from '@lib/result';
+import {Errors, Result, resultError, resultOk} from '@lib/result';
 import {OptionsConfigRepo} from '@background/repo';
 import {newPage, Page} from '@background/page';
-
-type GetPageError = 'error-getting-page';
-
-type VerifyPageError = Errors<
-  Errors<typeof newPage, GetPageError>,
-  Errors<OptionsConfigRepo['getConfig']>
->;
+import {
+  GetPageError,
+  GetPageResponse,
+  GetPageService,
+  GetPagesService,
+} from '@background/service';
+import {getPages} from '@background/service/api/auth';
 
 type VerifyPageResponse =
   | {
       status: 'success';
       page: Page;
     }
-  | {status: 'not-found' | 'no-access' | 'no-page'};
+  | {status: 'no-page' | 'no-page-access' | 'invalid-auth'};
+
+type VerifyPageError = Errors<
+  'usecase--verify-page--no-page-access' | 'usecase--verify-page--invalid-auth',
+  Errors<OptionsConfigRepo['getConfig'], typeof newPage>
+>;
 
 interface VerifyPageRepo {
   getOptionsConfig: OptionsConfigRepo['getConfig'];
 }
 
 interface VerifyPageService {
-  getPage: (id: string) => Promise<Result<VerifyPageResponse, GetPageError>>;
+  getPage: GetPageService;
+  getPages: GetPagesService;
 }
 
 const log = createLog('background', 'VerifyPageUsecase');
@@ -38,6 +44,8 @@ const newVerifyPageInteractor = (
   service: VerifyPageService
 ): VerifyPageInteractor => {
   const VerifyPage: VerifyPageInteractor = {
+    // Use last switch to ensure that any new error types will cause a TypeScript error.
+    // eslint-disable-next-line consistent-return
     async verifyPage() {
       // get options config
       log.info('Calling repo.getOptionsConfig: Start');
@@ -47,24 +55,54 @@ const newVerifyPageInteractor = (
       }
       log.info('Calling repo.getOptionsConfig: Finish');
 
-      // if no page id, return error or status
       const id = optionsConfigResult.value?.page?.id;
       if (!id) {
+        // Use get pages to test if token is valid
+        const getPagesResult = await service.getPages();
+        if (getPagesResult.ok) {
+          return resultOk({
+            status: 'no-page',
+          });
+        }
+        // No default case so that we get a TypeScript error if a new error type is added.
+        // eslint-disable-next-line default-case
+        switch (getPagesResult.errorType) {
+          case 'service--get-pages--invalid-auth':
+            return resultOk({
+              status: 'invalid-auth',
+            });
+          case 'service--get-pages--other':
+            return resultError(
+              'Could not verify auth',
+              'usecase--verify-page--no-page-access'
+            );
+        }
+      }
+
+      const getPageResult = await service.getPage(id);
+      if (getPageResult.ok) {
         return resultOk({
-          status: 'no-page',
+          status: 'success',
+          page: getPageResult.value.page,
         });
       }
-
-      // get page from notion
-      log.info('Calling service.verifyPage: Start');
-      const verifyPageResult = await service.getPage(id);
-      log.info('Calling service.verifyPage: Finish');
-      if (!verifyPageResult.ok) {
-        log.info('Calling service.verifyPage: Error');
-        return verifyPageResult;
+      // No default case so that we get a TypeScript error if a new error type is added.
+      // eslint-disable-next-line default-case
+      switch (getPageResult.errorType) {
+        case 'service--get-page--invalid-auth':
+          return resultOk({
+            status: 'invalid-auth',
+          });
+        case 'service--get-page--no-page-access':
+          return resultOk({
+            status: 'no-page-access',
+          });
+        case 'service--get-page--other':
+          return resultError(
+            'Could not verify page access',
+            'usecase--verify-page--no-page-access'
+          );
       }
-
-      return verifyPageResult;
     },
   };
   return VerifyPage;

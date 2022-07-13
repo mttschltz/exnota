@@ -287,21 +287,21 @@ const useStatusScreen = (): StatusScreen => {
       // TODO: error
       return;
     }
-    if (result.value.status === 'no-access') {
-      // TODO:
-      return;
-    }
-    if (result.value.status === 'no-page') {
-      // TODO:
-      return;
-    }
-    if (result.value.status === 'not-found') {
-      // TODO:
-      return;
-    }
-    if (result.value.status === 'success') {
-      // TODO:
-      setOptionsPage(result.value.page);
+
+    // eslint-disable-next-line default-case
+    switch (result.value.status) {
+      case 'invalid-auth':
+        // TODO: show error
+        break;
+      case 'no-page':
+        // TODO: show error
+        break;
+      case 'no-page-access':
+        // TODO: Show error
+        break;
+      case 'success':
+        setOptionsPage(result.value.page);
+        break;
     }
   }, [initialised]);
 

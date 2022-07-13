@@ -45,6 +45,8 @@ const handler: Handler = async (event, context) => {
     },
   });
 
+  // TODO: handle the case where token is invalid/expired... how can we catch this?
+
   const pages: GetPagesNotionApiSuccessResponse['pages'] = []
 
   // The OAuth flow seems to only support selecting top level pages, so we'll only look for those
