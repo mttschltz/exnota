@@ -22,6 +22,7 @@ import {useTranslate, Translate} from '@background/ui/i18n/i18n';
 import {connect, getClientId} from '@background/service/message/auth';
 import {Page} from '@background/page';
 import {setPage, verifyPage} from '@background/service/message/options';
+import {ResultValue} from '@lib/result';
 
 const ErrorWithDetails: React.FC<{
   message: string;
@@ -603,64 +604,94 @@ const Connect: React.FC = () => {
   );
 };
 
+const Status: React.FC<{
+  pageStatus?: ResultValue<typeof verifyPage>;
+  reconnect: () => void;
+}> = (props) => {
+  const [status, setStatus] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!props.pageStatus) {
+      return;
+    }
+    let newStatus: NonNullable<typeof status>;
+
+    // No default case so that we get a TypeScript error if a new status type is added.
+    // eslint-disable-next-line default-case
+    switch (props.pageStatus.status) {
+      // 'no-auth' case is not expected at this point
+      case 'no-auth':
+      case 'invalid-auth':
+        // TODO: translated message
+        newStatus = 'No longer connected';
+        break;
+      case 'no-page':
+      case 'no-page-access':
+        // TODO: translated message
+        newStatus = 'No access to page';
+        break;
+      case 'success':
+        newStatus = 'Connected';
+        break;
+    }
+    setStatus(newStatus);
+    if (status !== newStatus) {
+      setStatus(newStatus);
+    }
+  }, [props.pageStatus, props.pageStatus?.status, status]);
+
+  return (
+    <>
+      {status && (
+        <Box direction="row" align="center">
+          <Box basis="xsmall">
+            {/* TODO: Translations */}
+            <Paragraph>Status</Paragraph>
+          </Box>
+          <Tag value={status} />
+          {/* TODO: Translations */}
+          <Button onClick={props.reconnect} primary label="Reconnect" />
+        </Box>
+      )}
+    </>
+  );
+};
+
 const Options: React.FC = () => {
   const [flow, setFlow] = useState<'status' | 'connect' | 'loading' | 'error'>(
     'loading'
   );
-  const [reconnectMessage, setReconnectMesage] = useState<string | undefined>(
-    undefined
-  );
-  const [error, setError] = useState<string | undefined>(undefined);
-
   const reconnect = useCallback(() => {
     setFlow('connect');
   }, []);
+  const [pageStatus, setPageStatus] = useState<
+    ResultValue<typeof verifyPage> | undefined
+  >(undefined);
 
   useEffect(() => {
     async function verify(): Promise<void> {
       const result = await verifyPage();
       let newFlow: typeof flow;
-      let newReconnectMessage: typeof reconnectMessage;
-      let newError: typeof error;
 
       if (result.ok) {
+        setPageStatus(result.value);
         // No default case so that we get a TypeScript error if a new status type is added.
         // eslint-disable-next-line default-case
         switch (result.value.status) {
           case 'no-auth':
             newFlow = 'connect';
-            newReconnectMessage = undefined;
-            newError = undefined;
             break;
           case 'invalid-auth':
-            newFlow = 'status';
-            // TODO: translated message
-            newReconnectMessage = undefined;
-            newError = undefined;
-            break;
           case 'no-page':
           case 'no-page-access':
-            newFlow = 'status';
-            // TODO: translated message
-            newReconnectMessage = undefined;
-            newError = undefined;
-            break;
           case 'success':
             newFlow = 'status';
-            newReconnectMessage = undefined;
-            newError = undefined;
             break;
         }
-        setFlow(newFlow);
       } else {
         newFlow = 'error';
-        newReconnectMessage = undefined;
-        // TODO: Show translated error message
-        newError = undefined;
       }
       setFlow(newFlow);
-      setReconnectMesage(newReconnectMessage);
-      setError(newError);
     }
     verify();
   }, []);
@@ -685,14 +716,7 @@ const Options: React.FC = () => {
             {flow === 'loading' && <Spinner />}
             {flow === 'connect' && <Connect />}
             {flow === 'status' && (
-              <Box direction="row" align="center">
-                {/* TODO: Translations */}
-                <Box basis="xsmall">
-                  <Paragraph>Status</Paragraph>
-                </Box>
-                <Tag value="Connected" />
-                <Button onClick={reconnect} primary label="Reconnect" />
-              </Box>
+              <Status pageStatus={pageStatus} reconnect={reconnect} />
             )}
             {flow === 'error' && <Paragraph>Error</Paragraph>}
           </Box>
