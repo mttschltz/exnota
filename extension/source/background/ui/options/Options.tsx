@@ -612,6 +612,10 @@ const Options: React.FC = () => {
   );
   const [error, setError] = useState<string | undefined>(undefined);
 
+  const reconnect = useCallback(() => {
+    setFlow('connect');
+  }, []);
+
   useEffect(() => {
     async function verify(): Promise<void> {
       const result = await verifyPage();
@@ -675,16 +679,23 @@ const Options: React.FC = () => {
               <Heading level="3" size="4" alignSelf="center">
                 {browser.i18n.getMessage('extensionName')}
               </Heading>
-              <div>
-                <Box>
-                  {flow === 'loading' && <Spinner />}
-                  {flow === 'connect' && <Paragraph>Connect</Paragraph>}
-                  {flow === 'status' && <Paragraph>Status</Paragraph>}
-                  {flow === 'error' && <Paragraph>Error</Paragraph>}
-                </Box>
-              </div>
             </Box>
           </Header>
+          <Box direction="column">
+            {flow === 'loading' && <Spinner />}
+            {flow === 'connect' && <Connect />}
+            {flow === 'status' && (
+              <Box direction="row" align="center">
+                {/* TODO: Translations */}
+                <Box basis="xsmall">
+                  <Paragraph>Status</Paragraph>
+                </Box>
+                <Tag value="Connected" />
+                <Button onClick={reconnect} primary label="Reconnect" />
+              </Box>
+            )}
+            {flow === 'error' && <Paragraph>Error</Paragraph>}
+          </Box>
         </PageContent>
       </GrommetPage>
     </Grommet>
