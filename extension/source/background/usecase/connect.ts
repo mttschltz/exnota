@@ -1,10 +1,5 @@
 import {createLog} from '@lib/log';
-import {
-  Errors,
-  Result,
-  resultError,
-  resultOk,
-} from '@lib/result';
+import {Errors, Result, resultError, resultOk} from '@lib/result';
 import {
   AuthConfigRepo,
   ExpectedTokenResponse,
@@ -13,8 +8,9 @@ import {
 import {Page} from '@background/page';
 import {newAuthConfig} from '@background/authConfig';
 import {newOptionsConfig} from '@background/optionsConfig';
+import {GetPagesError, GetPagesService} from '@background/service';
 
-type ConnectServiceError = 'error-getting-token' | 'error-getting-pages';
+type ConnectServiceError = Errors<'error-getting-token', GetPagesError>;
 
 type ConnectError = Errors<
   Errors<AuthConfigRepo['getConfig'], AuthConfigRepo['saveConfig']>,
@@ -32,7 +28,7 @@ interface ConnectService {
     code: string,
     redirectURL: string
   ) => Promise<Result<ExpectedTokenResponse, ConnectServiceError>>;
-  getPages: () => Promise<Result<Page[], 'error-getting-pages'>>;
+  getPages: GetPagesService;
 }
 
 interface PageSetResponse {

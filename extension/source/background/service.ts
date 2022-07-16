@@ -17,4 +17,10 @@ type GetPagesError =
   | 'service--get-pages--other';
 type GetPagesService = () => Promise<Result<Page[], GetPagesError>>;
 
-export type {GetPagesService, GetPageService, GetPageResponse, GetPageError};
+export type {
+  GetPagesService,
+  GetPagesError,
+  GetPageService,
+  GetPageResponse,
+  GetPageError,
+};
