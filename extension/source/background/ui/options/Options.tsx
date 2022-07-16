@@ -609,13 +609,14 @@ const Status: React.FC<{
   reconnect: () => void;
 }> = (props) => {
   const [status, setStatus] = useState<string | undefined>(undefined);
+  const [statusPage, setStatusPage] = useState<Page | undefined>(undefined);
 
   useEffect(() => {
     if (!props.pageStatus) {
       return;
     }
     let newStatus: NonNullable<typeof status>;
-
+    let newStatusPage: Page | undefined;
     // No default case so that we get a TypeScript error if a new status type is added.
     // eslint-disable-next-line default-case
     switch (props.pageStatus.status) {
@@ -632,26 +633,42 @@ const Status: React.FC<{
         break;
       case 'success':
         newStatus = 'Connected';
+        newStatusPage = props.pageStatus.page;
         break;
     }
-    setStatus(newStatus);
+    if (statusPage !== newStatusPage) {
+      setStatusPage(newStatusPage);
+    }
     if (status !== newStatus) {
       setStatus(newStatus);
     }
-  }, [props.pageStatus, props.pageStatus?.status, status]);
+  }, [props.pageStatus, props.pageStatus?.status, status, statusPage]);
 
   return (
     <>
       {status && (
-        <Box direction="row" align="center">
-          <Box basis="xsmall">
+        <>
+          <Box direction="row" align="center">
+            <Box basis="xsmall">
+              {/* TODO: Translations */}
+              <Paragraph>Status</Paragraph>
+            </Box>
+            <Tag value={status} />
             {/* TODO: Translations */}
-            <Paragraph>Status</Paragraph>
+            <Button onClick={props.reconnect} primary label="Reconnect" />
           </Box>
-          <Tag value={status} />
-          {/* TODO: Translations */}
-          <Button onClick={props.reconnect} primary label="Reconnect" />
-        </Box>
+          {statusPage && (
+            <Box direction="row" align="center">
+              <Box basis="xsmall">
+                {/* TODO: Translations */}
+                <Paragraph>Page</Paragraph>
+              </Box>
+              <a href={statusPage.url} target="_blank" rel="noreferrer">
+                <Tag value={statusPage.title} />
+              </a>
+            </Box>
+          )}
+        </>
       )}
     </>
   );
