@@ -83,7 +83,7 @@ const newVerifyPageInteractor = (
 
       log.info('Calling service.getPage: Start');
       const getPageResult = await service.getPage(id);
-      log.info('Calling service.getPage: Finish');
+      log.info('Calling service.getPage: Finish', getPageResult);
       if (getPageResult.ok) {
         return resultOk({
           status: 'success',

@@ -41,6 +41,9 @@ const getPage: GetPageService = async (id: string) => {
       const body: Partial<GetPageNotionApiErrorResponse> =
         await response.json();
       if (!body.error) {
+        log.error(
+          'Calling notionGetPage: Finish - error type not found in response'
+        );
         return resultError(
           `Error getting page: ${body?.error} (${response.statusText} - ${response.status})`,
           'service--get-page--other',
@@ -51,6 +54,7 @@ const getPage: GetPageService = async (id: string) => {
           }
         );
       }
+      log.info(`Calling notionGetPage: Finish - error type: ${body.error}`);
 
       let errorMessage: string;
       let errorType: GetPageError;
@@ -62,7 +66,7 @@ const getPage: GetPageService = async (id: string) => {
           errorType = 'service--get-page--no-page-access';
           break;
         case 'api-no-token':
-        case 'api--invalid-token':
+        case 'api--notion--invalid-token':
           errorMessage = 'No token';
           errorType = 'service--get-page--invalid-auth';
           break;
@@ -74,12 +78,20 @@ const getPage: GetPageService = async (id: string) => {
         case 'body-not-json':
         case 'no-app-version':
         case 'no-message-body':
+        case 'api--notion--client-other':
+        case 'api--notion--notionhq-other':
+        case 'api--notion--rate-limit':
+        case 'api--notion--server-other':
+        case 'api--notion--unknown':
           errorMessage = `Other error ${body.error}`;
           errorType = 'service--get-page--other';
           break;
       }
       return resultError(errorMessage, errorType);
     } catch {
+      log.error(
+        'Calling notionGetPage: Finish - could not parse response body'
+      );
       return resultError(
         `Error getting page: ${response.statusText} - ${response.status}`,
         'service--get-page--other',

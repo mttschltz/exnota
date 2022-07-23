@@ -3,7 +3,8 @@ import { Handler } from "@netlify/functions";
 import { Client } from '@notionhq/client'
 import { hasAppVersion } from "src/helper/appVersion";
 import { getTraceIdentifiers, hasTraceIdentifiers } from "src/helper/identifier";
-import { createLog, isErrorish } from "src/helper/log";
+import { createLog, isErrorish, unknownError } from "src/helper/log";
+import { api } from "src/helper/notionApi";
 import { getToken } from "src/helper/token";
 
 const resultOk = (response: GetPageNotionApiSuccessResponse) => {
@@ -58,18 +59,37 @@ const handler: Handler = async (event, context) => {
     return resultError({error: GET_PAGE_ERROR.NO_ID})
   }
 
+  
   const notion = new Client({
     auth: token,
   });
-  const res = await notion.pages.retrieve({
+
+  const response = await api(notion.pages.retrieve, {
     page_id: id,
-  });
+  })
   
-  // TODO: handle the case where token is invalid/expired... how can we catch this?
+  if (response.status === "api-error") {
+    log.error('Unknown error', {
+      body: response.error.body,
+      code: response.error.code,
+      message: response.error.message,
+      name: response.error.name,
+      status: response.error.status,
+    })
+    return resultError({
+      error: response.category
+    })
+  }
+  if (response.status === 'unknown-error') {
+    log.error('Unknown error', unknownError(response.error))
+    return resultError({
+      error: 'api--notion--unknown',
+    })
+  }
 
   let page: { id: string, title: string, url: string } | undefined
-  if ('parent' in res) {
-    const propKeyValues = Object.entries(res.properties)
+  if ('parent' in response.result) {
+    const propKeyValues = Object.entries(response.result.properties)
     let title
     for (let i = 0; i < propKeyValues.length; i++) {
       const propValue = propKeyValues[i][1]
@@ -81,14 +101,14 @@ const handler: Handler = async (event, context) => {
     }
     
     if (!title) {
-      log.warn(`Page ${res.id} has no title`)
+      log.warn(`Page ${response.result.id} has no title`)
     }
     
     page = {
-      id: res.id,
+      id: response.result.id,
       // TODO: Use translations
       title: title ?? 'Untitled',
-      url: res.url,
+      url: response.result.url,
     }
   }
 
