@@ -1,5 +1,5 @@
 import { ERROR_NOTION } from "@api/service"
-import { UnknownHTTPResponseError, APIResponseError, APIErrorCode, ClientErrorCode } from "@notionhq/client"
+import { UnknownHTTPResponseError, APIResponseError, APIErrorCode, ClientErrorCode, Client } from "@notionhq/client"
 import { isHTTPResponseError } from "@notionhq/client/build/src/errors"
 
 type APIResponse<T> = APISuccess<T> | APIError | UnknownError
@@ -16,10 +16,10 @@ interface UnknownError {
   status: 'unknown-error'
   error: unknown
 }
-const api = async <APICall extends (...args: any) => Promise<any>, Args extends Parameters<APICall>[0], Return extends Awaited<ReturnType<APICall>>>(apiCall: APICall, args: Args): Promise<APIResponse<Return>> => {
+const api = async <APICall extends (...args: any) => Promise<any>, Args extends Parameters<APICall>[0], Return extends Awaited<ReturnType<APICall>>>(apiCall: APICall, client: Client, args: Args): Promise<APIResponse<Return>> => {
   let response: Return
   try {
-    response = await apiCall(args)
+    response = await apiCall.call(client, args)
   } catch(e) {
     if (isHTTPResponseError(e)) {
       let apiErrorCategory: APIError['category']

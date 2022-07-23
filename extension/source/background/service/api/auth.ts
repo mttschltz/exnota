@@ -6,7 +6,7 @@ import {
   getTokenNotionApiPath,
   GetTokenNotionApiSuccessResponse,
 } from '@api/service';
-import {GetPagesService} from '@background/service';
+import {GetPagesError, GetPagesService} from '@background/service';
 import {ConnectService} from '@background/usecase/connect';
 import {createLog, isErrorish} from '@lib/log';
 import {resultError, resultOk, serializeResult} from '@lib/result';
@@ -37,18 +37,44 @@ const getPages: GetPagesService = async () => {
       // response.json() will throw a syntax error if the body isn't valid JSON, which at time
       // of writing happens if the function service is down.
       const body: GetPagesNotionApiErrorResponse = await response.json();
+
+      log.info('Calling notionGetPages: Finish - not ok response body', {
+        ...body,
+      });
+
+      let errorMessage: string;
+      let errorType: GetPagesError;
+      // No default case so that we get a TypeScript error if a new error type is added.
+      // eslint-disable-next-line default-case
+      switch (body.error) {
+        case 'api-no-token':
+        case 'api--notion--invalid-token':
+          errorMessage = 'No token';
+          errorType = 'service--get-pages--invalid-auth';
+          break;
+        case 'body-not-json':
+        case 'no-app-version':
+        case 'no-message-body':
+        case 'api--notion--client-other':
+        case 'api--notion--notionhq-other':
+        case 'api--notion--rate-limit':
+        case 'api--notion--server-other':
+        case 'api--notion--unknown':
+          errorMessage = `Other error ${body.error}`;
+          errorType = 'service--get-pages--other';
+          break;
+      }
+
       return serializeResult(
-        resultError(
-          `Error getting pages: ${body?.error} (${response.statusText} - ${response.status})`,
-          'service--get-pages--other',
-          undefined,
-          {
-            status: response.status,
-            statusText: response.statusText,
-          }
-        )
+        resultError(errorMessage, errorType, undefined, {
+          status: response.status,
+          statusText: response.statusText,
+        })
       );
     } catch {
+      log.error(
+        'Calling notionGetPages: Finish - could not parse error response body'
+      );
       return serializeResult(
         resultError(
           `Error getting pages: ${response.statusText} - ${response.status}`,

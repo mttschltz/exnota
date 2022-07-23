@@ -64,7 +64,7 @@ const handler: Handler = async (event, context) => {
     auth: token,
   });
 
-  const response = await api(notion.pages.retrieve, {
+  const response = await api(notion.pages.retrieve, notion, {
     page_id: id,
   })
   

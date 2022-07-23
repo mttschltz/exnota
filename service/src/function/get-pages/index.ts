@@ -3,7 +3,8 @@ import { Handler } from "@netlify/functions";
 import { Client } from '@notionhq/client'
 import { hasAppVersion } from "src/helper/appVersion";
 import { getTraceIdentifiers, hasTraceIdentifiers } from "src/helper/identifier";
-import { createLog } from "src/helper/log";
+import { createLog, unknownError } from "src/helper/log";
+import { api } from "src/helper/notionApi";
 import { getToken } from "src/helper/token";
 
 const resultOk = (response: GetPagesNotionApiSuccessResponse) => {
@@ -38,21 +39,38 @@ const handler: Handler = async (event, context) => {
   const notion = new Client({
     auth: token,
   });
-  const res = await notion.search({
+  const res = await api(notion.search, notion, {
     filter: {
       property: "object",
       value: 'page',
     },
   });
 
-  // TODO: handle the case where token is invalid/expired... how can we catch this?
+  if (res.status === "api-error") {
+    log.error('Unknown error', {
+      body: res.error.body,
+      code: res.error.code,
+      message: res.error.message,
+      name: res.error.name,
+      status: res.error.status,
+    })
+    return resultError({
+      error: res.category
+    })
+  }
+  if (res.status === 'unknown-error') {
+    log.error('Unknown error', unknownError(res.error))
+    return resultError({
+      error: 'api--notion--unknown',
+    })
+  }
 
   const pages: GetPagesNotionApiSuccessResponse['pages'] = []
 
   // The OAuth flow seems to only support selecting top level pages, so we'll only look for those
   // pages in the results. The results also return subpages of those top level pages.
-  const topLevelPages: typeof res.results[number][] = []
-  res.results.forEach(async (page) => {
+  const topLevelPages: typeof res.result.results[number][] = []
+  res.result.results.forEach(async (page) => {
     if (page.object === 'page') {
       if (!('parent' in page)) {
         // According to the docs, all pages have a parent: https://developers.notion.com/reference/page
@@ -93,7 +111,7 @@ const handler: Handler = async (event, context) => {
     })
   }
 
-  if (res.has_more) {
+  if (res.result.has_more) {
     log.info('Has more pages')
   }
   
